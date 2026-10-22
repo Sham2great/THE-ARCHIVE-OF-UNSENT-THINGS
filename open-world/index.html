@@ -14,7 +14,6 @@
 <div id="intro"><div id="panel"><div id="eyebrow">A SMALL WORLD TO GET LOST IN</div><h1>WILD<br>LANDS.</h1><p id="desc">A quiet, hand-built landscape. Walk through forests, climb the hills, find the lake, and see what lies beyond the next ridge.</p><button id="enter">STEP INTO THE WORLD</button><div id="tips">THIRD-PERSON VIEW · WASD TO WALK · MOUSE TO ORBIT<br>MOBILE: ARROWS TO MOVE · DRAG TO ROTATE CAMERA</div></div></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 const host=document.querySelector('#world'),intro=document.querySelector('#intro');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x8bb9c9);scene.fog=new THREE.FogExp2(0x8bb9c9,.0035);
 const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.1,700);camera.rotation.order='YXZ';
@@ -58,10 +57,7 @@ for(let i=0;i<20;i++){const t=i/20,x=4+t*24,z=-2-t*37;const stone=new THREE.Mesh
 // A softer, more human-shaped adventurer with rounded proportions and layered clothing.
 const player=new THREE.Group();scene.add(player);
 const placeholder=new THREE.Group();player.add(placeholder);placeholder.visible=true;
-const animeOutfit=new THREE.Group();animeOutfit.visible=false;player.add(animeOutfit);
-
-let characterMixer=null,characterActions={},currentCharacterAction=null,characterLoaded=false;
-function switchCharacterAnimation(state){if(!characterMixer)return;const next=characterActions[state]||characterActions.idle||Object.values(characterActions)[0];if(!next||next===currentCharacterAction)return;next.reset().fadeIn(.22).play();if(currentCharacterAction)currentCharacterAction.fadeOut(.22);currentCharacterAction=next;}
+let characterLoaded=false;
 const skin=mat(0xe0b49a),jacket=mat(0x202b43),jacketShade=mat(0x355c67),pants=mat(0x202535),boots=mat(0x171923),hair=mat(0x20202a),packMat=mat(0x202b43),eyeMat=mat(0x243b56);
 function part(geo,material,pos,parent=placeholder,scale=null){const o=new THREE.Mesh(geo,material);o.position.set(...pos);if(scale)o.scale.set(...scale);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
 const capsule=(radius,length,material,pos,parent=placeholder,scale=null)=>part(new THREE.CapsuleGeometry(radius,length,6,12),material,pos,parent,scale);
@@ -153,7 +149,7 @@ if(f||s){const speed=(keys.shift?12:6)*dt,mag=Math.hypot(f,s);px+=(forward.x*f+r
 px=Math.max(-174,Math.min(174,px));pz=Math.max(-174,Math.min(174,pz));
 const groundY=heightAt(px,pz);player.position.set(px,groundY,pz);player.rotation.y=yaw;
 const moving=!!(f||s),running=!!keys.shift;const stride=moving?Math.sin(walkT)*.72:0;armL.rotation.x=stride;armR.rotation.x=-stride;legL.rotation.x=-stride;legR.rotation.x=stride;player.position.y=groundY+(!characterLoaded&&moving?Math.abs(Math.sin(walkT*2))*.035:0);
-if(characterLoaded){switchCharacterAnimation(moving?(running?'run':'walk'):'idle');if(characterMixer)characterMixer.update(dt);}
+if(characterLoaded){}
 const orbitDistance=4.8,orbitHeight=1.35+Math.sin(pitch)*4.2,horizontalDistance=orbitDistance*Math.cos(pitch);
 camera.position.set(px+Math.sin(yaw)*horizontalDistance,groundY+orbitHeight,pz+Math.cos(yaw)*horizontalDistance);camera.lookAt(px,groundY+.72,pz);
 lake.position.y=-.25+Math.sin(t*.7)*.04;waterMat.color.setHSL(.51,.35,.43+Math.sin(t*.4)*.025);
