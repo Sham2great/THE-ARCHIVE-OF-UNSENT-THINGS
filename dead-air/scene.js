@@ -183,11 +183,11 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
       const moving=forward!==0||strafe!==0;
       const length=Math.hypot(forward,strafe)||1;
       const speed=(keys.shift?2.5:1.55)*dt;
-      walkX+=((strafe*Math.cos(yaw)-forward*Math.sin(yaw))/length)*speed;
-      walkZ+=((strafe*Math.sin(yaw)+forward*Math.cos(yaw))/length)*speed;
+      walkX+=((strafe*Math.cos(yaw)+forward*Math.sin(yaw))/length)*speed;
+      walkZ+=((strafe*Math.sin(yaw)-forward*Math.cos(yaw))/length)*speed;
       walkX=Math.max(-4.85,Math.min(4.85,walkX));
       walkZ=Math.max(-2.25,Math.min(4.55,walkZ));
-      bob+=(moving?1:0-bob)*.05;
+      bob+=(Number(moving)-bob)*.05;
       const step=Math.sin(t*10)*.025*(moving?1:0);
       camera.position.set(walkX+Math.sin(t*.17)*.012,1.7+Math.sin(t*.23)*.018+step,walkZ);
       const lookX=Math.sin(yaw)*Math.cos(pitch),lookY=Math.sin(pitch),lookZ=-Math.cos(yaw)*Math.cos(pitch);
