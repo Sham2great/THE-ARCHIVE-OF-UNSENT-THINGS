@@ -65,6 +65,14 @@ h2{font-size:clamp(28px,5vw,43px);font-weight:500;letter-spacing:-.06em;line-hei
 #footer{max-width:920px;padding:0 26px 24px;margin:auto;display:flex;justify-content:space-between;gap:14px;color:#4e5350;font:9px var(--mono);letter-spacing:.08em}
 @media(max-width:600px){#top{padding:0 17px;height:58px}.top-right{gap:8px}.top-right .session{display:none}#stage{padding:25px 17px 36px}.scene{margin-top:17px;min-height:245px}.window{left:7%;width:24%}.door{right:8%;width:29%}.table{left:25%;width:48%}.figure{left:56%}.content{padding-top:29px}.prose{font-size:13px}.note{flex-direction:column}#footer{padding:0 17px 20px;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+#deadAir3d{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-3;opacity:.96;pointer-events:none}
+.scene{background:#090b0b;perspective:900px}
+.scene[data-mood="paper"] #deadAir3d{opacity:.55}
+.scene[data-mood="outside"] #deadAir3d{filter:hue-rotate(8deg) brightness(.8)}
+.scene[data-mood="cellar"] #deadAir3d{filter:brightness(.68) saturate(.7)}
+.scene[data-mood="figure"] #deadAir3d{filter:contrast(1.12) brightness(.8)}
+@keyframes roomPulse{0%,100%{opacity:.85}48%{opacity:1}50%{opacity:.68}53%{opacity:.95}}
+.scene[data-mood="figure"]{animation:roomPulse 7s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -119,7 +127,7 @@ function goto(id){const s=scenes[id];if(!s)return; if(s.effect)s.effect();if(s.e
 function render(s,id){
  $('location').textContent=s.loc||'LOCATION UNKNOWN';$('clock').textContent=s.clock||'11:04 PM';$('sceneNumber').textContent=s.frame||'FRAME 001';$('sceneLabel').textContent=s.label||'RESIDENCE / NIGHT';$('caseStatus').textContent=state.truth>2?'STATEMENT CONFLICTS':state.denial>2?'MEMORY DEGRADED':'CASE UNSEALED';
  const door=$('door'),figure=$('figure'),object=$('object'),scene=$('scene');door.classList.toggle('open',['cellar','openCellar','transcript','phone','lastPage','reveal','finalMessage'].includes(id));figure.classList.toggle('visible',['reveal','finalMessage','endingMercy'].includes(id));
- scene.dataset.mood=s.visual||'room';scene.style.filter=state.denial>2?'saturate(.65) contrast(1.12)':'none';object.style.background=id.includes('tape')||id==='keepTape'||id==='eraseTape'?'linear-gradient(90deg,#171817,#37362f,#111)':'#111414';$('light').style.opacity=['outside','destroy'].includes(id)?'.25':'1';
+ scene.dataset.mood=s.visual||'room';scene.style.filter=state.denial>2?'saturate(.65) contrast(1.12)':'none';window.dispatchEvent(new CustomEvent('dead-air-scene',{detail:{mood:s.visual||'room',id:id}}));object.style.background=id.includes('tape')||id==='keepTape'||id==='eraseTape'?'linear-gradient(90deg,#171817,#37362f,#111)':'#111414';$('light').style.opacity=['outside','destroy'].includes(id)?'.25':'1';
  $('content').innerHTML='<div class="kicker">'+(s.kicker||'RECOVERED')+'</div><h2>'+s.title+'</h2><div class="prose">'+s.text.split('\n\n').map(p=>'<p>'+p+'</p>').join('')+'</div><div class="options">'+(s.choices||[]).map((c,i)=>'<button class="option" data-next="'+c[1]+'"><span class="letter">'+letters[i]+'</span><span>'+c[0]+'</span><span class="arrow">↗</span></button>').join('')+'</div><div class="note"><span>YOUR ACCOUNT IS BEING RECORDED.</span><span>RECORDS FOUND: '+state.evidence.length.toString().padStart(2,'0')+'</span></div>';
  $('content').querySelectorAll('[data-next]').forEach(b=>b.addEventListener('click',()=>{if(state.sound)tone(140,.09,.025);if(state.visited.length>4&&Math.random()<.12){$('flash').classList.remove('flash');void $('flash').offsetWidth;$('flash').classList.add('flash')}goto(b.dataset.next)}));
  if(id==='intro')$('caseStatus').textContent='CASE UNSEALED';
@@ -141,5 +149,6 @@ function start(){ $('boot').style.opacity='0';$('boot').style.visibility='hidden
 $('skip').addEventListener('click',start);setTimeout(()=>{if($('boot').style.visibility!=='hidden')start()},4200);
 })();
 </script>
+<script type="module" src="./scene.js"></script>
 </body>
 </html>
