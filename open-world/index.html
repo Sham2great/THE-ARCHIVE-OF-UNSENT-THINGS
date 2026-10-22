@@ -57,7 +57,7 @@ for(let i=0;i<20;i++){const t=i/20,x=4+t*24,z=-2-t*37;const stone=new THREE.Mesh
 
 // A softer, more human-shaped adventurer with rounded proportions and layered clothing.
 const player=new THREE.Group();scene.add(player);
-const placeholder=new THREE.Group();placeholder.rotation.y=Math.PI;player.add(placeholder);
+const placeholder=new THREE.Group();player.add(placeholder);
 const toon=color=>new THREE.MeshToonMaterial({color});
 const ink=toon(0x171b27),black=toon(0x252b3b),charcoal=toon(0x343b4b),steel=toon(0xc8d5e4),silver=toon(0x8998ad),skin=toon(0xf0c5ad),hair=toon(0x111522),hairLight=toon(0x283044),red=toon(0x7d263d),gold=toon(0xc6a66b),eye=toon(0x9eeaff);
 function part(geo,material,pos,parent=placeholder,rot=[0,0,0],scale=null){const o=new THREE.Mesh(geo,material);o.position.set(...pos);o.rotation.set(...rot);if(scale)o.scale.set(...scale);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
