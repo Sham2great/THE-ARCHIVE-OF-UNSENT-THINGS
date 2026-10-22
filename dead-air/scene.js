@@ -38,7 +38,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
     renderer.setSize(host.clientWidth, host.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.35;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.domElement.id = 'deadAir3d';
@@ -46,18 +46,18 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
     host.prepend(renderer.domElement);
     host.classList.add('has3d');
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x080b0b, 0.055);
+    scene.fog = new THREE.FogExp2(0x080b0b, 0.028);
     camera = new THREE.PerspectiveCamera(43, host.clientWidth/host.clientHeight, 0.1, 80);
     camera.position.set(0, 1.72, 4.55);
     camera.lookAt(0, 1.6, 0);
     clock = new THREE.Clock();
 
     const world = new THREE.Group(); scene.add(world);
-    materials.wall = mat(0x20221f);
-    materials.side = mat(0x151816);
-    materials.floor = mat(0x171a18, .98);
-    materials.trim = mat(0x383a32);
-    materials.door = mat(0x292a24);
+    materials.wall = mat(0x30332e);
+    materials.side = mat(0x242824);
+    materials.floor = mat(0x292d29, .98);
+    materials.trim = mat(0x494b41);
+    materials.door = mat(0x3a3c34);
     materials.dark = mat(0x080a09);
     materials.metal = mat(0x625e4e, .32, .6);
     materials.paper = mat(0xb5ae98);
@@ -98,7 +98,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
     addBox(win,'night window',[1.8,2.1,.08],[0,0,0],materials.window);
     for(const x of [-.94,0,.94]) addBox(win,'window frame',[.07,2.28,.13],[x,0,.04],materials.trim);
     for(const y of [-.5,.55]) addBox(win,'window frame',[1.95,.07,.13],[0,y,.04],materials.trim);
-    windowGlow=new THREE.PointLight(0x66899a,2.2,10,2); windowGlow.position.set(-3,3.2,-1.8); world.add(windowGlow);
+    windowGlow=new THREE.PointLight(0x66899a,3.4,12,2); windowGlow.position.set(-3,3.2,-1.8); world.add(windowGlow);
 
     // Door on the back wall: hinged geometry makes the opening a physical event.
     doorPivot=group(world,[2.8,0,-2.82]);
@@ -145,8 +145,9 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
     const rainGeo=new THREE.BufferGeometry();rainGeo.setAttribute('position',new THREE.BufferAttribute(rainPositions,3));
     rain=new THREE.Points(rainGeo,new THREE.PointsMaterial({color:0x879ba2,size:.025,transparent:true,opacity:.55}));scene.add(rain);
 
-    scene.add(new THREE.AmbientLight(0x778079,.52));
-    keyLight=new THREE.PointLight(0xd1c4a0,1.8,9,2);keyLight.position.set(0,4.8,.4);keyLight.castShadow=true;keyLight.shadow.mapSize.set(512,512);scene.add(keyLight);
+    scene.add(new THREE.HemisphereLight(0xb8c8c8, 0x37362e, 1.05));
+    scene.add(new THREE.AmbientLight(0x9aa59a,.78));
+    keyLight=new THREE.PointLight(0xd1c4a0,2.8,11,2);keyLight.position.set(0,4.8,.4);keyLight.castShadow=true;keyLight.shadow.mapSize.set(512,512);scene.add(keyLight);
     redLight=new THREE.PointLight(0x572a25,0,5,2);redLight.position.set(2.8,1.2,-1.9);scene.add(redLight);
 
     const resize=()=>{if(!renderer)return;const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
@@ -220,8 +221,8 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
       const fs=figure.scale.x+(figureTarget-figure.scale.x)*.025;figure.scale.setScalar(fs);
       figure.position.x=1.2+Math.sin(t*.45)*.035;
       figureHead.rotation.y=Math.sin(t*.37)*.12;
-      keyLight.intensity=1.55+Math.sin(t*1.6)*.14+(Math.sin(t*8.2)>.985?-.65:0);
-      if(mood==='cellar'||mood==='figure')keyLight.intensity*=.72;
+      keyLight.intensity=2.45+Math.sin(t*1.6)*.12+(Math.sin(t*8.2)>.985?-.45:0);
+      if(mood==='cellar'||mood==='figure')keyLight.intensity*=.86;
       glass.rotation.z=Math.sin(t*1.2)*.025;
       cassette.rotation.y=Math.sin(t*.8)*.025;
       const dp=dust.geometry.attributes.position;
