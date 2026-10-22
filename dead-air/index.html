@@ -75,6 +75,11 @@ h2{font-size:clamp(28px,5vw,43px);font-weight:500;letter-spacing:-.06em;line-hei
 .scene[data-mood="figure"] #deadAir3d{filter:contrast(1.12) brightness(.8)}
 @keyframes roomPulse{0%,100%{opacity:.85}48%{opacity:1}50%{opacity:.68}53%{opacity:.95}}
 .scene[data-mood="figure"]{animation:roomPulse 7s ease-in-out infinite}
+.walk-hint{position:absolute;right:15px;bottom:14px;z-index:6;color:#788078;font:8px var(--mono);letter-spacing:.12em;opacity:.85;pointer-events:none}
+.scene.has3d{cursor:grab;touch-action:pan-y}
+.scene.has3d:active{cursor:grabbing}
+.scene.has3d:focus-visible{outline:1px solid #9aa997;outline-offset:3px}
+@media(max-width:600px){.walk-hint{right:10px;bottom:12px;font-size:7px;letter-spacing:.06em}}
 </style>
 </head>
 <body>
@@ -83,7 +88,7 @@ h2{font-size:clamp(28px,5vw,43px);font-weight:500;letter-spacing:-.06em;line-hei
 <header id="top"><div class="brand"><b>◉</b> DEAD AIR <span style="color:#4e5550">/ INCIDENT 11-04</span></div><div class="top-right"><span id="caseStatus">CASE UNSEALED</span><button class="sound" id="sound">SOUND OFF</button></div></header>
 <main id="stage">
 <div class="statusline"><span id="location">LOCATION UNKNOWN</span><span id="clock">11:04 PM</span></div>
-<div class="scene" id="scene" aria-label="An illustrated dark room"><div class="light" id="light"></div><div class="window"></div><div class="door" id="door"></div><div class="floor"></div><div class="table"></div><div class="object" id="object"></div><div class="figure" id="figure"></div><span class="scene-label" id="sceneLabel">RESIDENCE / NIGHT</span><span class="scene-number" id="sceneNumber">FRAME 001</span></div>
+<div class="scene" id="scene" aria-label="An illustrated dark room"><div class="light" id="light"></div><div class="window"></div><div class="door" id="door"></div><div class="floor"></div><div class="table"></div><div class="object" id="object"></div><div class="figure" id="figure"></div><span class="scene-label" id="sceneLabel">RESIDENCE / NIGHT</span><span class="scene-number" id="sceneNumber">FRAME 001</span><span class="walk-hint">WASD / ARROWS · DRAG TO LOOK</span></div>
 <section class="content" id="content" aria-live="polite"></section>
 </main>
 <footer id="footer"><span>FICTIONAL PSYCHOLOGICAL HORROR</span><span>NOTHING HERE ACCESSES YOUR DEVICE OR PRIVATE FILES.</span></footer>
