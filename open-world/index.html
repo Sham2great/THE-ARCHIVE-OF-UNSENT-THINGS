@@ -58,7 +58,7 @@ for(let i=0;i<20;i++){const t=i/20,x=4+t*24,z=-2-t*37;const stone=new THREE.Mesh
 // A softer, more human-shaped adventurer with rounded proportions and layered clothing.
 const player=new THREE.Group();scene.add(player);
 const placeholder=new THREE.Group();player.add(placeholder);placeholder.visible=true;
-const animeOutfit=new THREE.Group();animeOutfit.visible=false;player.add(animeOutfit);
+const animeOutfit=new THREE.Group();animeOutfit.scale.setScalar(.95/1.72);animeOutfit.visible=false;player.add(animeOutfit);
 const cloth=color=>new THREE.MeshToonMaterial({color});
 function outfitMesh(geometry,material,position,rotation=[0,0,0],scale=[1,1,1]){const mesh=new THREE.Mesh(geometry,material);mesh.position.set(...position);mesh.rotation.set(...rotation);mesh.scale.set(...scale);mesh.castShadow=true;mesh.receiveShadow=true;animeOutfit.add(mesh);return mesh;}
 const midnight=cloth(0x202b43),teal=cloth(0x355c67),red=cloth(0x9f3d48),gold=cloth(0xc8a45c),steel=cloth(0xcbd4dd);
@@ -138,7 +138,7 @@ characterLoader.load('https://threejs.org/examples/models/gltf/Soldier.glb',gltf
     if(Array.isArray(node.material))node.material=node.material.map(toonify);else if(node.material)node.material=toonify(node.material);
   });
   const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
-  const scale=1.72/Math.max(size.y,.001);model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
+  const targetHeight=.95;const scale=targetHeight/Math.max(size.y,.001);model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
   model.rotation.y=Math.PI;player.add(model);placeholder.visible=false;animeOutfit.visible=true;characterLoaded=true;
   characterMixer=new THREE.AnimationMixer(model);
   const clips=gltf.animations||[];
@@ -188,8 +188,8 @@ px=Math.max(-174,Math.min(174,px));pz=Math.max(-174,Math.min(174,pz));
 const groundY=heightAt(px,pz);player.position.set(px,groundY,pz);player.rotation.y=yaw;
 const moving=!!(f||s),running=!!keys.shift;const stride=moving?Math.sin(walkT)*.72:0;armL.rotation.x=stride;armR.rotation.x=-stride;legL.rotation.x=-stride;legR.rotation.x=stride;player.position.y=groundY+(!characterLoaded&&moving?Math.abs(Math.sin(walkT*2))*.035:0);
 if(characterLoaded){switchCharacterAnimation(moving?(running?'run':'walk'):'idle');if(characterMixer)characterMixer.update(dt);}
-const orbitDistance=6.2,orbitHeight=2.35+Math.sin(pitch)*4.2,horizontalDistance=orbitDistance*Math.cos(pitch);
-camera.position.set(px+Math.sin(yaw)*horizontalDistance,groundY+orbitHeight,pz+Math.cos(yaw)*horizontalDistance);camera.lookAt(px,groundY+1.35,pz);
+const orbitDistance=4.8,orbitHeight=1.35+Math.sin(pitch)*4.2,horizontalDistance=orbitDistance*Math.cos(pitch);
+camera.position.set(px+Math.sin(yaw)*horizontalDistance,groundY+orbitHeight,pz+Math.cos(yaw)*horizontalDistance);camera.lookAt(px,groundY+.72,pz);
 lake.position.y=-.25+Math.sin(t*.7)*.04;waterMat.color.setHSL(.51,.35,.43+Math.sin(t*.4)*.025);
 clouds.forEach(c=>{c.position.x+=dt*.65;if(c.position.x>190)c.position.x=-190;});
 
