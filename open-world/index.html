@@ -58,6 +58,31 @@ for(let i=0;i<20;i++){const t=i/20,x=4+t*24,z=-2-t*37;const stone=new THREE.Mesh
 // A softer, more human-shaped adventurer with rounded proportions and layered clothing.
 const player=new THREE.Group();scene.add(player);
 const placeholder=new THREE.Group();player.add(placeholder);placeholder.visible=true;
+const animeOutfit=new THREE.Group();animeOutfit.visible=false;player.add(animeOutfit);
+const cloth=color=>new THREE.MeshToonMaterial({color});
+function outfitMesh(geometry,material,position,rotation=[0,0,0],scale=[1,1,1]){const mesh=new THREE.Mesh(geometry,material);mesh.position.set(...position);mesh.rotation.set(...rotation);mesh.scale.set(...scale);mesh.castShadow=true;mesh.receiveShadow=true;animeOutfit.add(mesh);return mesh;}
+const midnight=cloth(0x202b43),teal=cloth(0x355c67),red=cloth(0x9f3d48),gold=cloth(0xc8a45c),steel=cloth(0xcbd4dd);
+outfitMesh(new THREE.BoxGeometry(.24,.72,.055),teal,[-.105,1.02,-.205],[-.08,0,-.025]);
+outfitMesh(new THREE.BoxGeometry(.24,.72,.055),midnight,[.105,1.02,-.205],[.08,0,.025]);
+outfitMesh(new THREE.BoxGeometry(.46,.13,.32),midnight,[0,1.42,0]);
+outfitMesh(new THREE.BoxGeometry(.43,.075,.33),gold,[0,1.24,0]);
+outfitMesh(new THREE.BoxGeometry(.18,.1,.35),red,[0,1.235,-.015]);
+outfitMesh(new THREE.BoxGeometry(.27,.55,.045),midnight,[0,.78,.18],[-.08,0,0]);
+outfitMesh(new THREE.BoxGeometry(.14,.48,.05),teal,[-.19,.78,.1],[0,0,-.08]);
+outfitMesh(new THREE.BoxGeometry(.14,.48,.05),teal,[.19,.78,.1],[0,0,.08]);
+outfitMesh(new THREE.SphereGeometry(.14,12,8),midnight,[-.32,1.34,0],[0,0,.2],[1,.55,1]);
+outfitMesh(new THREE.SphereGeometry(.14,12,8),midnight,[.32,1.34,0],[0,0,-.2],[1,.55,1]);
+outfitMesh(new THREE.BoxGeometry(.018,.58,.018),gold,[-.225,.98,-.24]);
+outfitMesh(new THREE.BoxGeometry(.018,.58,.018),gold,[.225,.98,-.24]);
+const katana=new THREE.Group();animeOutfit.add(katana);katana.position.set(.34,1.02,.12);katana.rotation.set(.12,0,-.2);
+const blade=new THREE.Mesh(new THREE.BoxGeometry(.045,.82,.018),steel);blade.position.y=.49;katana.add(blade);
+const bladeEdge=new THREE.Mesh(new THREE.BoxGeometry(.012,.79,.008),cloth(0xffffff));bladeEdge.position.set(.025,.49,.012);katana.add(bladeEdge);
+const guard=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.035,12),gold);guard.rotation.z=Math.PI/2;guard.position.y=.065;katana.add(guard);
+const grip=new THREE.Mesh(new THREE.CylinderGeometry(.027,.035,.22,8),midnight);grip.position.y=-.065;katana.add(grip);
+const pommel=new THREE.Mesh(new THREE.SphereGeometry(.04,8,6),gold);pommel.position.y=-.18;katana.add(pommel);
+const sheath=new THREE.Mesh(new THREE.BoxGeometry(.07,.88,.065),midnight);sheath.position.set(-.28,1.04,.22);sheath.rotation.z=-.24;animeOutfit.add(sheath);
+outfitMesh(new THREE.BoxGeometry(.085,.04,.08),gold,[-.28,1.1,.18],[0,0,-.24]);
+
 let characterMixer=null,characterActions={},currentCharacterAction=null,characterLoaded=false;
 function switchCharacterAnimation(state){if(!characterMixer)return;const next=characterActions[state]||characterActions.idle||Object.values(characterActions)[0];if(!next||next===currentCharacterAction)return;next.reset().fadeIn(.22).play();if(currentCharacterAction)currentCharacterAction.fadeOut(.22);currentCharacterAction=next;}
 const skin=mat(0xc9916e),jacket=mat(0x526f58),jacketShade=mat(0x3c5545),pants=mat(0x303a3b),boots=mat(0x282622),hair=mat(0x30251f),packMat=mat(0x786044),eyeMat=mat(0x211d1a);
@@ -114,7 +139,7 @@ characterLoader.load('https://threejs.org/examples/models/gltf/Soldier.glb',gltf
   });
   const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
   const scale=1.72/Math.max(size.y,.001);model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
-  model.rotation.y=Math.PI;player.add(model);placeholder.visible=false;characterLoaded=true;
+  model.rotation.y=Math.PI;player.add(model);placeholder.visible=false;animeOutfit.visible=true;characterLoaded=true;
   characterMixer=new THREE.AnimationMixer(model);
   const clips=gltf.animations||[];
   const pick=pattern=>clips.find(clip=>pattern.test(clip.name));
