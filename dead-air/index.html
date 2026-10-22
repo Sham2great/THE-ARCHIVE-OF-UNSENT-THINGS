@@ -65,6 +65,8 @@ h2{font-size:clamp(28px,5vw,43px);font-weight:500;letter-spacing:-.06em;line-hei
 #footer{max-width:920px;padding:0 26px 24px;margin:auto;display:flex;justify-content:space-between;gap:14px;color:#4e5350;font:9px var(--mono);letter-spacing:.08em}
 @media(max-width:600px){#top{padding:0 17px;height:58px}.top-right{gap:8px}.top-right .session{display:none}#stage{padding:25px 17px 36px}.scene{margin-top:17px;min-height:245px}.window{left:7%;width:24%}.door{right:8%;width:29%}.table{left:25%;width:48%}.figure{left:56%}.content{padding-top:29px}.prose{font-size:13px}.note{flex-direction:column}#footer{padding:0 17px 20px;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+.scene.has3d .window,.scene.has3d .door,.scene.has3d .floor,.scene.has3d .table,.scene.has3d .object,.scene.has3d .figure,.scene.has3d .light{display:none!important}
+.scene.has3d:before{background:linear-gradient(180deg,#07090922,#0a0b0b08 50%,#05060644)}
 #deadAir3d{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-3;opacity:.96;pointer-events:none}
 .scene{background:#090b0b;perspective:900px}
 .scene[data-mood="paper"] #deadAir3d{opacity:.55}
@@ -136,7 +138,7 @@ function finish(s){
  state.ending=s.endingName||'ENDING';let chosen=s;
  if(s.endingName==='THE QUIET VERSION'&&state.truth>=4&&state.keptTape)chosen=scenes.endingLoop;
  else if(s.endingName==='THE UNEDITED VERSION'&&state.keptTape&&state.truth>=5&&state.mercy>=1)chosen=scenes.endingMercy;
- $('location').textContent=chosen.loc;$('clock').textContent=chosen.clock;$('sceneNumber').textContent=chosen.frame;$('sceneLabel').textContent=chosen.label;$('caseStatus').textContent='CASE SEALED';
+ $('location').textContent=chosen.loc;$('clock').textContent=chosen.clock;$('sceneNumber').textContent=chosen.frame;$('sceneLabel').textContent=chosen.label;$('caseStatus').textContent='CASE SEALED';$('scene').dataset.mood=chosen.visual||'outside';window.dispatchEvent(new CustomEvent('dead-air-scene',{detail:{mood:chosen.visual||'outside',id:chosen.endingName||'ending'}}));
  $('door').classList.toggle('open',chosen.visual==='outside');$('figure').classList.toggle('visible',chosen.endingName==='THE OPEN DOOR');$('light').style.opacity='.3';
  $('content').innerHTML='<div class="ending-mark">ENDING // '+(chosen.endingName||'UNFILED')+'</div><div class="kicker">'+chosen.kicker+'</div><h2>'+chosen.title+'</h2><div class="prose">'+chosen.text.split('\n\n').map(p=>'<p>'+p+'</p>').join('')+'</div><div class="note"><span>THE RECORD IS NOT THE PERSON.</span><span>CLUES RECOVERED: '+state.evidence.length+'</span></div><div class="end-actions"><button id="again">REPLAY FROM BEGINNING ↻</button><button id="inspect">VIEW WHAT YOU FOUND</button></div><div id="evidencePanel" class="prose hidden" style="margin-top:22px"></div>';
  $('again').addEventListener('click',()=>{Object.assign(state,{mercy:0,denial:0,truth:0,keptTape:false,openedDoor:false,believedVoice:false,visited:[],evidence:[],ending:null});goto('intro')});
