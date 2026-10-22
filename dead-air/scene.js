@@ -202,8 +202,10 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
       walkZ+=((strafe*Math.sin(yaw)-forward*Math.cos(yaw))/length)*speed;
       walkX=Math.max(-4.85,Math.min(4.85,walkX));
       const atDoor=Math.abs(walkX-3.55)<.78;
-      const backLimit=(doorTarget>.65&&atDoor)?-9.75:-2.25;
+      const canUseHall=doorTarget>.65&&(atDoor||walkZ<-2.05);
+      const backLimit=canUseHall?-9.75:-2.25;
       walkZ=Math.max(backLimit,Math.min(4.55,walkZ));
+      if(walkZ<-2.05)walkX=Math.max(2.78,Math.min(4.32,walkX));
       hall.visible=doorTarget>.15||walkZ<-2.0;
       hallLamp.intensity=walkZ<-2.0?1.2:.55;
       bob+=(Number(moving)-bob)*.05;
