@@ -126,29 +126,8 @@ sphere(boots,[0,-.49,-.085],[.14,.09,.23],legL);
 sphere(boots,[0,-.49,-.085],[.14,.09,.23],legR);
 
 // Load a real skinned humanoid and use its built-in idle, walk and run clips.
-// Cel shading gives the model a cleaner anime-inspired finish. The handmade
-// character remains visible if the remote asset cannot be loaded.
-const characterLoader=new GLTFLoader();
-if(false) characterLoader.load('https://threejs.org/examples/models/gltf/Soldier.glb',gltf=>{
-  const model=gltf.scene;
-  model.traverse(node=>{
-    if(!node.isMesh)return;
-    node.castShadow=true;node.receiveShadow=true;
-    const toonify=old=>new THREE.MeshToonMaterial({color:old.color||new THREE.Color(0xffffff),map:old.map||null,normalMap:old.normalMap||null,transparent:old.transparent||false,opacity:old.opacity??1,side:old.side??THREE.FrontSide,alphaTest:old.alphaTest||0});
-    if(Array.isArray(node.material))node.material=node.material.map(toonify);else if(node.material)node.material=toonify(node.material);
-  });
-  const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
-  const targetHeight=.95;const scale=targetHeight/Math.max(size.y,.001);model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
-  model.rotation.y=Math.PI;player.add(model);placeholder.visible=false;animeOutfit.visible=true;characterLoaded=true;
-  characterMixer=new THREE.AnimationMixer(model);
-  const clips=gltf.animations||[];
-  const pick=pattern=>clips.find(clip=>pattern.test(clip.name));
-  const idle=pick(/idle|stand/i)||clips[0],walk=pick(/walk/i)||idle,run=pick(/run/i)||walk;
-  if(idle)characterActions.idle=characterMixer.clipAction(idle);
-  if(walk)characterActions.walk=characterMixer.clipAction(walk);
-  if(run)characterActions.run=characterMixer.clipAction(run);
-  switchCharacterAnimation('idle');
-},undefined,error=>{console.warn('WILDLANDS character model failed to load; keeping the fallback character.',error);placeholder.visible=true;document.querySelector('#notice').textContent='CHARACTER MODEL FAILED TO LOAD';document.querySelector('#notice').classList.add('show');});
+// The remote Soldier model has been removed. Only the built-in adventurer is used.
+
 const clouds=[];for(let i=0;i<18;i++){const cloud=new THREE.Group();const cm=new THREE.MeshStandardMaterial({color:0xf0f3e8,roughness:1,transparent:true,opacity:.7});for(let j=0;j<5;j++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1+rand()*1.5,9,7),cm);puff.position.set((rand()-.5)*5,rand()*1.2,(rand()-.5)*2);cloud.add(puff);}cloud.position.set((rand()-.5)*320,30+rand()*18,(rand()-.5)*320);cloud.scale.setScalar(1+rand()*2);scene.add(cloud);clouds.push(cloud);}
 
 // Nine ancient lights are hidden across the landscape.
