@@ -69,7 +69,22 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
     materials.window = new THREE.MeshBasicMaterial({color:0x263941});
     materials.dust = new THREE.MeshBasicMaterial({color:0xb8c4b7,transparent:true,opacity:.6});
 
-    addBox(world,'back wall',[12,5.5,.25],[0,2.75,-3],materials.wall);
+    // The rear wall is split around the door, revealing a narrow hallway when it opens.
+    addBox(world,'back wall left',[8.7,5.5,.25],[-1.65,2.75,-3],materials.wall);
+    addBox(world,'back wall right',[1.6,5.5,.25],[5.2,2.75,-3],materials.wall);
+    const hall=group(world,[3.55,0,-3.08]);
+    addBox(hall,'hall floor',[1.72,.14,11],[0,-.08,-5.5],materials.floor);
+    addBox(hall,'hall ceiling',[1.72,.14,11],[0,3.25,-5.5],materials.side);
+    addBox(hall,'hall left wall',[.12,3.35,11],[-.91,1.6,-5.5],materials.side);
+    addBox(hall,'hall right wall',[.12,3.35,11],[.91,1.6,-5.5],materials.side);
+    addBox(hall,'hall end shadow',[1.72,3.35,.12],[0,1.6,-11],materials.dark);
+    for(let i=0;i<5;i++){
+      const z=-1.2-i*1.85;
+      addBox(hall,'hall frame top',[1.78,.08,.08],[0,2.92,z],materials.trim);
+      addBox(hall,'hall frame left',[.07,2.95,.08],[-.84,1.45,z],materials.trim);
+      addBox(hall,'hall frame right',[.07,2.95,.08],[.84,1.45,z],materials.trim);
+    }
+    const hallLamp=new THREE.PointLight(0x7b8580,.55,8,2);hallLamp.position.set(0,2.75,-8.5);hall.add(hallLamp);
     addBox(world,'left wall',[.25,5.5,8],[-6,2.75,1],materials.side);
     addBox(world,'right wall',[.25,5.5,8],[6,2.75,1],materials.side);
     addBox(world,'ceiling',[12,.2,8],[0,5.5,1],materials.side);
@@ -186,7 +201,11 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
       walkX+=((strafe*Math.cos(yaw)+forward*Math.sin(yaw))/length)*speed;
       walkZ+=((strafe*Math.sin(yaw)-forward*Math.cos(yaw))/length)*speed;
       walkX=Math.max(-4.85,Math.min(4.85,walkX));
-      walkZ=Math.max(-2.25,Math.min(4.55,walkZ));
+      const atDoor=Math.abs(walkX-3.55)<.78;
+      const backLimit=(doorTarget>.65&&atDoor)?-9.75:-2.25;
+      walkZ=Math.max(backLimit,Math.min(4.55,walkZ));
+      hall.visible=doorTarget>.15||walkZ<-2.0;
+      hallLamp.intensity=walkZ<-2.0?1.2:.55;
       bob+=(Number(moving)-bob)*.05;
       const step=Math.sin(t*10)*.025*(moving?1:0);
       camera.position.set(walkX+Math.sin(t*.17)*.012,1.7+Math.sin(t*.23)*.018+step,walkZ);
@@ -195,7 +214,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
       const close=mood==='cellar'||mood==='paper'||mood==='tape'||mood==='photo';
       // Narrative reveals alter the room lighting without taking movement away.
       keyLight.distance=close?7:9;
-      doorPivot.rotation.y+=(doorTarget*(-1.05)-doorPivot.rotation.y)*.018;
+      doorPivot.rotation.y+=(doorTarget*(1.05)-doorPivot.rotation.y)*.018;
       const fs=figure.scale.x+(figureTarget-figure.scale.x)*.025;figure.scale.setScalar(fs);
       figure.position.x=1.2+Math.sin(t*.45)*.035;
       figureHead.rotation.y=Math.sin(t*.37)*.12;
