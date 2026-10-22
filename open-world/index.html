@@ -53,19 +53,47 @@ box(cabin,[1.35,2.7,.18],[0,1.35,3.08],mat(0x302c24));box(cabin,[.9,.95,.1],[2,2
 const pathMat=mat(0xb3a77e);
 for(let i=0;i<20;i++){const t=i/20,x=4+t*24,z=-2-t*37;const stone=new THREE.Mesh(new THREE.BoxGeometry(1.4,.06,1.1),pathMat);stone.position.set(x,heightAt(x,z)+.04,z);stone.rotation.y=.2;scene.add(stone);}
 
-// Third-person adventurer. Separate body parts make the walk cycle visible.
+// A softer, more human-shaped adventurer with rounded proportions and layered clothing.
 const player=new THREE.Group();scene.add(player);
-const skin=mat(0xd6a47d),jacket=mat(0x476b55),pants=mat(0x303b3a),boots=mat(0x211f1d),hair=mat(0x302820);
-function part(geo,material,pos,parent=player){const o=new THREE.Mesh(geo,material);o.position.set(...pos);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
-part(new THREE.CapsuleGeometry(.36,.68,4,8),jacket,[0,1.25,0]);
-part(new THREE.SphereGeometry(.27,12,10),skin,[0,1.98,0]);
-part(new THREE.SphereGeometry(.28,12,8),hair,[0,2.12,.035]);
-const pack=part(new THREE.BoxGeometry(.48,.58,.22),mat(0x725c40),[0,1.32,.34]);
-const armL=new THREE.Group();armL.position.set(-.43,1.52,0);player.add(armL);part(new THREE.CapsuleGeometry(.115,.46,3,6),jacket,[0,-.25,0],armL);part(new THREE.SphereGeometry(.11,8,6),skin,[0,-.53,0],armL);
-const armR=new THREE.Group();armR.position.set(.43,1.52,0);player.add(armR);part(new THREE.CapsuleGeometry(.115,.46,3,6),jacket,[0,-.25,0],armR);part(new THREE.SphereGeometry(.11,8,6),skin,[0,-.53,0],armR);
-const legL=new THREE.Group();legL.position.set(-.19,.86,0);player.add(legL);part(new THREE.CapsuleGeometry(.14,.48,3,6),pants,[0,-.24,0],legL);part(new THREE.BoxGeometry(.24,.13,.4),boots,[0,-.52,-.08],legL);
-const legR=new THREE.Group();legR.position.set(.19,.86,0);player.add(legR);part(new THREE.CapsuleGeometry(.14,.48,3,6),pants,[0,-.24,0],legR);part(new THREE.BoxGeometry(.24,.13,.4),boots,[0,-.52,-.08],legR);
-
+const skin=mat(0xc9916e),jacket=mat(0x526f58),jacketShade=mat(0x3c5545),pants=mat(0x303a3b),boots=mat(0x282622),hair=mat(0x30251f),packMat=mat(0x786044),eyeMat=mat(0x211d1a);
+function part(geo,material,pos,parent=player,scale=null){const o=new THREE.Mesh(geo,material);o.position.set(...pos);if(scale)o.scale.set(...scale);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
+const capsule=(radius,length,material,pos,parent=player,scale=null)=>part(new THREE.CapsuleGeometry(radius,length,6,12),material,pos,parent,scale);
+const sphere=(material,pos,scale,parent=player)=>part(new THREE.SphereGeometry(1,18,14),material,pos,parent,scale);
+// Rounded torso, waist and shoulders create a more natural silhouette.
+capsule(.31,.64,jacket,[0,1.34,0],[...[]]);
+part(new THREE.SphereGeometry(.34,18,14),jacket,[0,1.62,0],player,[1.12,.72,.78]);
+capsule(.22,.12,pants,[0,.91,0]);
+part(new THREE.SphereGeometry(.235,16,12),pants,[0,.91,0],player,[1,.62,.86]);
+// Neck and head.
+capsule(.105,.13,skin,[0,1.84,0]);
+sphere(skin,[0,2.08,-.025],[.235,.29,.22]);
+sphere(hair,[0,2.23,.015],[.245,.19,.235]);
+// Hairline and side locks, all rounded instead of angular blocks.
+sphere(hair,[0,2.18,-.13],[.22,.14,.13]);
+sphere(hair,[-.218,2.09,.005],[.065,.16,.085]);
+sphere(hair,[.218,2.09,.005],[.065,.16,.085]);
+// Subtle face details point toward the character's forward direction (-Z).
+sphere(skin,[0,2.035,-.229],[.055,.045,.055]);
+sphere(eyeMat,[-.085,2.105,-.216],[.022,.026,.012]);
+sphere(eyeMat,[.085,2.105,-.216],[.022,.026,.012]);
+// Rounded hiking backpack and curved-looking shoulder straps.
+capsule(.16,.29,packMat,[0,1.37,.255],player,[1.12,1,.58]);
+capsule(.035,.42,mat(0xb69a6b),[-.205,1.43,.13],player,[1,.8,1]);
+capsule(.035,.42,mat(0xb69a6b),[.205,1.43,.13],player,[1,.8,1]);
+// Arms pivot at the shoulders for a readable walking/running swing.
+const armL=new THREE.Group();armL.position.set(-.365,1.59,0);player.add(armL);
+const armR=new THREE.Group();armR.position.set(.365,1.59,0);player.add(armR);
+capsule(.105,.39,jacket,[0,-.23,0],armL);
+capsule(.082,.22,skin,[0,-.51,-.005],armL);
+capsule(.105,.39,jacket,[0,-.23,0],armR);
+capsule(.082,.22,skin,[0,-.51,-.005],armR);
+// Legs are rounded capsules; oval shoes avoid the old toy-block feet.
+const legL=new THREE.Group();legL.position.set(-.17,.86,0);player.add(legL);
+const legR=new THREE.Group();legR.position.set(.17,.86,0);player.add(legR);
+capsule(.115,.43,pants,[0,-.25,0],legL);
+capsule(.115,.43,pants,[0,-.25,0],legR);
+sphere(boots,[0,-.49,-.085],[.14,.09,.23],legL);
+sphere(boots,[0,-.49,-.085],[.14,.09,.23],legR);
 const clouds=[];for(let i=0;i<18;i++){const cloud=new THREE.Group();const cm=new THREE.MeshStandardMaterial({color:0xf0f3e8,roughness:1,transparent:true,opacity:.7});for(let j=0;j<5;j++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1+rand()*1.5,9,7),cm);puff.position.set((rand()-.5)*5,rand()*1.2,(rand()-.5)*2);cloud.add(puff);}cloud.position.set((rand()-.5)*320,30+rand()*18,(rand()-.5)*320);cloud.scale.setScalar(1+rand()*2);scene.add(cloud);clouds.push(cloud);}
 
 // Nine ancient lights are hidden across the landscape.
