@@ -41,6 +41,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
     renderer.domElement.id = 'deadAir3d';
     renderer.domElement.setAttribute('aria-hidden','true');
     host.prepend(renderer.domElement);
+    host.classList.add('has3d');
     scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x080b0b, 0.055);
     camera = new THREE.PerspectiveCamera(43, host.clientWidth/host.clientHeight, 0.1, 80);
@@ -156,7 +157,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 
     function animate(){
       raf=0;if(!alive||!renderer)return;raf=requestAnimationFrame(animate);
-      const t=clock.getElapsedTime(),dt=Math.min(clock.getDelta(),.05);
+      const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
       pointer.x+=(pointer.tx-pointer.x)*.018;pointer.y+=(pointer.ty-pointer.y)*.018;
       // Slow, human camera drift. Pointer control is subtle rather than gamey.
       const close=mood==='cellar'||mood==='paper'||mood==='tape'||mood==='photo';
@@ -180,6 +181,31 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
       rain.visible=mood!=='cellar'&&mood!=='paper';
       renderer.render(scene,camera);
     }
+    // Optional generative ambience: low, slowly beating tones plus filtered rain-like noise.
+    let audioContext=null, ambienceGain=null, droneA=null, droneB=null, noiseSource=null;
+    function ambience(on){
+      try{
+        if(!audioContext){
+          audioContext=new (window.AudioContext||window.webkitAudioContext)();
+          ambienceGain=audioContext.createGain();ambienceGain.gain.value=0;ambienceGain.connect(audioContext.destination);
+          const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=420;filter.Q.value=.6;filter.connect(ambienceGain);
+          droneA=audioContext.createOscillator();droneA.type='sine';droneA.frequency.value=43;const ga=audioContext.createGain();ga.gain.value=.35;droneA.connect(ga);ga.connect(filter);droneA.start();
+          droneB=audioContext.createOscillator();droneB.type='triangle';droneB.frequency.value=43.7;const gb=audioContext.createGain();gb.gain.value=.14;droneB.connect(gb);gb.connect(filter);droneB.start();
+          const buffer=audioContext.createBuffer(1,audioContext.sampleRate*2,audioContext.sampleRate),data=buffer.getChannelData(0);
+          for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.18;
+          noiseSource=audioContext.createBufferSource();noiseSource.buffer=buffer;noiseSource.loop=true;
+          const noiseFilter=audioContext.createBiquadFilter();noiseFilter.type='lowpass';noiseFilter.frequency.value=650;
+          const ng=audioContext.createGain();ng.gain.value=.11;noiseSource.connect(noiseFilter);noiseFilter.connect(ng);ng.connect(ambienceGain);noiseSource.start();
+        }
+        if(audioContext.state==='suspended')audioContext.resume();
+        ambienceGain.gain.cancelScheduledValues(audioContext.currentTime);
+        ambienceGain.gain.setTargetAtTime(on ? .025 : 0,audioContext.currentTime,.65);
+      }catch(e){/* audio is optional; the story remains playable */}
+    }
+    document.getElementById('sound')?.addEventListener('click',()=>{
+      const on=document.getElementById('sound')?.classList.contains('on');
+      ambience(on);
+    });
     animate();
     window.addEventListener('pagehide',()=>{alive=false;if(raf)cancelAnimationFrame(raf);renderer?.dispose();});
   } catch (error) {
