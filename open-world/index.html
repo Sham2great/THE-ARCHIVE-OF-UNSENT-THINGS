@@ -6,6 +6,7 @@
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#8ab7c5;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:#fff}canvas{display:block}#world{position:fixed;inset:0}#hud{position:fixed;inset:0;pointer-events:none;text-shadow:0 2px 10px #10251dcc}#brand{position:absolute;top:24px;left:26px;font-size:12px;letter-spacing:.35em;font-weight:800}#brand span{display:block;margin-top:7px;letter-spacing:.12em;font-weight:400;color:#e0f2dc;font-size:10px}#stats{position:absolute;top:25px;right:26px;text-align:right;font-size:11px;letter-spacing:.15em;color:#eaf5eb}#location{position:absolute;left:50%;top:26px;transform:translateX(-50%);font-size:10px;letter-spacing:.28em;color:#eff8e8;white-space:nowrap}#crosshair{position:absolute;left:50%;top:50%;width:6px;height:6px;border:1px solid #ffffffb0;border-radius:50%;transform:translate(-50%,-50%)}#bottom{position:absolute;left:26px;bottom:25px;font-size:11px;line-height:1.8;color:#e6f1e5;letter-spacing:.08em}#prompt{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:#f8f6dc;white-space:nowrap}#intro{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(180deg,#102a3733,#07191f88);pointer-events:auto;text-align:center;transition:opacity .8s}#intro.hide{opacity:0;pointer-events:none}#panel{width:min(600px,90vw);padding:34px 28px;background:#0c2027a8;border:1px solid #d7ead14a;backdrop-filter:blur(16px)}#eyebrow{font-size:10px;letter-spacing:.4em;color:#c4d9b5}h1{font-size:clamp(46px,9vw,86px);line-height:.9;letter-spacing:-.07em;margin:22px 0 18px;font-weight:650}#desc{font-size:13px;line-height:1.8;color:#d0ded7;max-width:390px;margin:0 auto 24px}button{pointer-events:auto;background:#d7e5c3;color:#172821;border:0;padding:14px 24px;font-weight:800;font-size:10px;letter-spacing:.22em;cursor:pointer}#tips{margin-top:20px;font-size:10px;color:#b9cbc4;letter-spacing:.08em;line-height:1.9}#mobile{position:absolute;bottom:18px;right:18px;display:none;pointer-events:auto;gap:8px;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px)}.move{border:1px solid #ffffff55;background:#0b1c2b55;color:white;border-radius:50%;font-size:16px;touch-action:none}#mobile .up{grid-column:2}#mobile .left{grid-column:1;grid-row:2}#mobile .down{grid-column:2;grid-row:2}#mobile .right{grid-column:3;grid-row:2}#notice{position:absolute;left:50%;top:58%;transform:translateX(-50%);font-size:10px;letter-spacing:.15em;color:#fff;opacity:0;transition:opacity .3s}#notice.show{opacity:1}#quest{position:absolute;right:26px;bottom:25px;text-align:right;font-size:10px;line-height:1.8;letter-spacing:.12em;color:#e6f1e5}#collected{color:#f5df9b}#interact{position:absolute;left:50%;top:58%;transform:translateX(-50%);font-size:10px;letter-spacing:.15em;color:#f4e7b5;opacity:0;white-space:nowrap}#interact.show{opacity:1}#daylabel{color:#f5dfbd}@media(max-width:700px){#quest{right:14px;bottom:14px;font-size:9px}}@media(max-width:700px){#mobile{display:grid}#bottom{font-size:9px;bottom:14px;left:14px}#brand{top:16px;left:16px}#stats{top:16px;right:16px}#location{top:58px}#prompt{bottom:140px}}
 </style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 </head>
 <body><div id="world"></div>
 <div id="hud"><div id="brand">WILDLANDS<span>AN OPEN WORLD, WITH NO MAP</span></div><div id="location">THE GREEN REACH</div><div id="stats">DAY 01<br><span id="coords">000 · 000</span></div><div id="crosshair"></div><div id="bottom">W A S D / ARROWS · MOVE<br>MOUSE · ORBIT CAMERA<br>SHIFT · RUN</div><div id="prompt">A WORLD THAT DOESN'T NEED YOU</div><div id="notice">YOU FOUND SOMETHING</div><div id="interact">PRESS E TO INTERACT</div><div id="quest">WANDERER'S JOURNAL<br><span id="collected">LIGHTS FOUND: 0 / 9</span><br><span id="daylabel">DAYLIGHT</span></div>
@@ -61,9 +62,9 @@ const capsule=(radius,length,material,pos,parent=player,scale=null)=>part(new TH
 const sphere=(material,pos,scale,parent=player)=>part(new THREE.SphereGeometry(1,18,14),material,pos,parent,scale);
 // Rounded torso, waist and shoulders create a more natural silhouette.
 capsule(.31,.64,jacket,[0,1.34,0]);
-part(new THREE.SphereGeometry(.34,18,14),jacket,[0,1.62,0],player,[1.12,.72,.78]);
+part(new THREE.SphereGeometry(.34,18,14),jacket,[0,1.62,0],placeholder,[1.12,.72,.78]);
 capsule(.22,.12,pants,[0,.91,0]);
-part(new THREE.SphereGeometry(.235,16,12),pants,[0,.91,0],player,[1,.62,.86]);
+part(new THREE.SphereGeometry(.235,16,12),pants,[0,.91,0],placeholder,[1,.62,.86]);
 // Neck and head.
 capsule(.105,.13,skin,[0,1.84,0]);
 sphere(skin,[0,2.08,-.025],[.235,.29,.22]);
@@ -77,9 +78,9 @@ sphere(skin,[0,2.035,-.229],[.055,.045,.055]);
 sphere(eyeMat,[-.085,2.105,-.216],[.022,.026,.012]);
 sphere(eyeMat,[.085,2.105,-.216],[.022,.026,.012]);
 // Rounded hiking backpack and curved-looking shoulder straps.
-capsule(.16,.29,packMat,[0,1.37,.255],player,[1.12,1,.58]);
-capsule(.035,.42,mat(0xb69a6b),[-.205,1.43,.13],player,[1,.8,1]);
-capsule(.035,.42,mat(0xb69a6b),[.205,1.43,.13],player,[1,.8,1]);
+capsule(.16,.29,packMat,[0,1.37,.255],placeholder,[1.12,1,.58]);
+capsule(.035,.42,mat(0xb69a6b),[-.205,1.43,.13],placeholder,[1,.8,1]);
+capsule(.035,.42,mat(0xb69a6b),[.205,1.43,.13],placeholder,[1,.8,1]);
 // Arms pivot at the shoulders for a readable walking/running swing.
 const armL=new THREE.Group();armL.position.set(-.365,1.59,0);player.add(armL);
 const armR=new THREE.Group();armR.position.set(.365,1.59,0);player.add(armR);
