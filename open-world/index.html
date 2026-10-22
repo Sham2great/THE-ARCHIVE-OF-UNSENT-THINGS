@@ -57,77 +57,26 @@ for(let i=0;i<20;i++){const t=i/20,x=4+t*24,z=-2-t*37;const stone=new THREE.Mesh
 
 // A softer, more human-shaped adventurer with rounded proportions and layered clothing.
 const player=new THREE.Group();scene.add(player);
-const placeholder=new THREE.Group();placeholder.rotation.y=Math.PI;player.add(placeholder);placeholder.visible=true;
-const animeOutfit=new THREE.Group();animeOutfit.visible=false;player.add(animeOutfit);
-const cloth=color=>new THREE.MeshToonMaterial({color});
-function outfitMesh(geometry,material,position,rotation=[0,0,0],scale=[1,1,1]){const mesh=new THREE.Mesh(geometry,material);mesh.position.set(...position);mesh.rotation.set(...rotation);mesh.scale.set(...scale);mesh.castShadow=true;mesh.receiveShadow=true;animeOutfit.add(mesh);return mesh;}
-const midnight=cloth(0x202b43),teal=cloth(0x355c67),red=cloth(0x9f3d48),gold=cloth(0xc8a45c),steel=cloth(0xcbd4dd);
-outfitMesh(new THREE.BoxGeometry(.24,.72,.055),teal,[-.105,1.02,.205],[-.08,0,-.025]);
-outfitMesh(new THREE.BoxGeometry(.24,.72,.055),midnight,[.105,1.02,.205],[.08,0,.025]);
-outfitMesh(new THREE.BoxGeometry(.46,.13,.32),midnight,[0,1.42,0]);
-outfitMesh(new THREE.BoxGeometry(.43,.075,.33),gold,[0,1.24,0]);
-outfitMesh(new THREE.BoxGeometry(.18,.1,.35),red,[0,1.235,-.015]);
-outfitMesh(new THREE.BoxGeometry(.27,.55,.045),midnight,[0,.78,-.18],[-.08,0,0]);
-outfitMesh(new THREE.BoxGeometry(.14,.48,.05),teal,[-.19,.78,-.1],[0,0,-.08]);
-outfitMesh(new THREE.BoxGeometry(.14,.48,.05),teal,[.19,.78,-.1],[0,0,.08]);
-outfitMesh(new THREE.SphereGeometry(.14,12,8),midnight,[-.32,1.34,0],[0,0,.2],[1,.55,1]);
-outfitMesh(new THREE.SphereGeometry(.14,12,8),midnight,[.32,1.34,0],[0,0,-.2],[1,.55,1]);
-outfitMesh(new THREE.BoxGeometry(.018,.58,.018),gold,[-.225,.98,.24]);
-outfitMesh(new THREE.BoxGeometry(.018,.58,.018),gold,[.225,.98,.24]);
-const katana=new THREE.Group();animeOutfit.add(katana);katana.position.set(.34,1.02,-.12);katana.rotation.set(.12,0,-.2);
-const blade=new THREE.Mesh(new THREE.BoxGeometry(.045,.82,.018),steel);blade.position.y=.49;katana.add(blade);
-const bladeEdge=new THREE.Mesh(new THREE.BoxGeometry(.012,.79,.008),cloth(0xffffff));bladeEdge.position.set(.025,.49,.012);katana.add(bladeEdge);
-const guard=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.035,12),gold);guard.rotation.z=Math.PI/2;guard.position.y=.065;katana.add(guard);
-const grip=new THREE.Mesh(new THREE.CylinderGeometry(.027,.035,.22,8),midnight);grip.position.y=-.065;katana.add(grip);
-const pommel=new THREE.Mesh(new THREE.SphereGeometry(.04,8,6),gold);pommel.position.y=-.18;katana.add(pommel);
-const sheath=new THREE.Mesh(new THREE.BoxGeometry(.07,.88,.065),midnight);sheath.position.set(-.28,1.04,-.22);sheath.rotation.z=-.24;animeOutfit.add(sheath);
-outfitMesh(new THREE.BoxGeometry(.085,.04,.08),gold,[-.28,1.1,-.18],[0,0,-.24]);
-
+const placeholder=new THREE.Group();placeholder.rotation.y=Math.PI;player.add(placeholder);
+const toon=color=>new THREE.MeshToonMaterial({color});
+const ink=toon(0x171b27),black=toon(0x252b3b),charcoal=toon(0x343b4b),steel=toon(0xc8d5e4),silver=toon(0x8998ad),skin=toon(0xf0c5ad),hair=toon(0x111522),hairLight=toon(0x283044),red=toon(0x7d263d),gold=toon(0xc6a66b),eye=toon(0x9eeaff);
+function part(geo,material,pos,parent=placeholder,rot=[0,0,0],scale=null){const o=new THREE.Mesh(geo,material);o.position.set(...pos);o.rotation.set(...rot);if(scale)o.scale.set(...scale);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
+const capsule=(r,len,material,pos,parent=placeholder,scale=null)=>part(new THREE.CapsuleGeometry(r,len,5,12),material,pos,parent,[0,0,0],scale);
+const sphere=(material,pos,scale,parent=placeholder)=>part(new THREE.SphereGeometry(1,18,14),material,pos,parent,[0,0,0],scale);
+capsule(.27,.53,black,[0,1.36,0]);part(new THREE.SphereGeometry(.3,18,14),black,[0,1.56,0],placeholder,[0,0,0],[1.08,.72,.83]);
+part(new THREE.CylinderGeometry(.205,.25,.18,12),ink,[0,1.02,0]);part(new THREE.CylinderGeometry(.24,.29,.075,12),gold,[0,1.11,0]);part(new THREE.CylinderGeometry(.04,.04,.08,8),red,[.12,1.11,-.02]);
+capsule(.105,.42,charcoal,[-.145,.69,0],placeholder,[1,.9,1]);capsule(.105,.42,charcoal,[.145,.69,0],placeholder,[1,.9,1]);sphere(ink,[-.145,.39,-.025],[.14,.09,.22]);sphere(ink,[.145,.39,-.025],[.14,.09,.22]);
+part(new THREE.BoxGeometry(.2,.62,.075),ink,[-.145,.88,.19],placeholder,[0,0,-.07]);part(new THREE.BoxGeometry(.2,.62,.075),ink,[.145,.88,.19],placeholder,[0,0,.07]);part(new THREE.BoxGeometry(.14,.58,.045),charcoal,[-.15,.88,.235],placeholder,[0,0,-.07]);part(new THREE.BoxGeometry(.14,.58,.045),charcoal,[.15,.88,.235],placeholder,[0,0,.07]);part(new THREE.BoxGeometry(.018,.48,.012),gold,[-.225,.9,.26]);part(new THREE.BoxGeometry(.018,.48,.012),gold,[.225,.9,.26]);
+part(new THREE.ConeGeometry(.12,.22,5),ink,[-.115,1.67,.02],placeholder,[0,0,.16]);part(new THREE.ConeGeometry(.12,.22,5),ink,[.115,1.67,.02],placeholder,[0,0,-.16]);part(new THREE.BoxGeometry(.49,.12,.34),charcoal,[0,1.58,0]);part(new THREE.BoxGeometry(.085,.48,.035),red,[.12,1.35,.205],placeholder,[0,0,-.18]);part(new THREE.BoxGeometry(.055,.5,.035),gold,[-.12,1.34,.218],placeholder,[0,0,.18]);
+capsule(.085,.12,skin,[0,1.77,0]);sphere(skin,[0,1.99,-.015],[.205,.25,.19]);sphere(hair,[0,2.15,.005],[.22,.16,.205]);sphere(hair,[0,2.07,-.13],[.2,.12,.11]);sphere(hair,[-.19,2.02,.015],[.055,.14,.075]);sphere(hair,[.19,2.02,.015],[.055,.14,.075]);
+part(new THREE.ConeGeometry(.075,.24,5),hair,[-.14,2.19,-.12],placeholder,[0,0,-.38]);part(new THREE.ConeGeometry(.078,.28,5),hair,[-.055,2.23,-.13],placeholder,[0,0,-.12]);part(new THREE.ConeGeometry(.08,.25,5),hair,[.045,2.22,-.12],placeholder,[0,0,.18]);part(new THREE.ConeGeometry(.07,.21,5),hair,[.14,2.17,-.105],placeholder,[0,0,.42]);part(new THREE.ConeGeometry(.075,.2,5),hair,[.04,2.29,.015],placeholder,[0,0,.1]);sphere(hairLight,[-.08,2.17,-.14],[.045,.035,.025]);sphere(skin,[0,1.96,-.198],[.04,.035,.025]);sphere(eye,[-.073,2.005,-.184],[.028,.018,.012]);sphere(eye,[.073,2.005,-.184],[.028,.018,.012]);
+part(new THREE.BoxGeometry(.065,.012,.012),hair,[-.073,2.04,-.19],placeholder,[0,0,-.14]);part(new THREE.BoxGeometry(.065,.012,.012),hair,[.073,2.04,-.19],placeholder,[0,0,.14]);
+sphere(black,[-.32,1.55,0],[.19,.15,.19]);sphere(black,[.32,1.55,0],[.19,.15,.19]);part(new THREE.SphereGeometry(.17,12,10),charcoal,[-.32,1.59,0],placeholder,[0,0,.2],[1,.42,1]);part(new THREE.SphereGeometry(.17,12,10),charcoal,[.32,1.59,0],placeholder,[0,0,-.2],[1,.42,1]);
+const armL=new THREE.Group();armL.position.set(-.34,1.48,0);placeholder.add(armL);const armR=new THREE.Group();armR.position.set(.34,1.48,0);placeholder.add(armR);capsule(.09,.32,black,[0,-.2,0],armL);capsule(.075,.22,skin,[0,-.45,-.005],armL);capsule(.09,.32,black,[0,-.2,0],armR);capsule(.075,.22,skin,[0,-.45,-.005],armR);part(new THREE.CylinderGeometry(.095,.095,.09,8),charcoal,[0,-.36,0],armL);part(new THREE.CylinderGeometry(.095,.095,.09,8),charcoal,[0,-.36,0],armR);
+const legL=new THREE.Group();legL.position.set(-.145,.84,0);placeholder.add(legL);const legR=new THREE.Group();legR.position.set(.145,.84,0);placeholder.add(legR);capsule(.105,.38,charcoal,[0,-.23,0],legL);capsule(.105,.38,charcoal,[0,-.23,0],legR);sphere(ink,[0,-.46,-.075],[.13,.085,.21],legL);sphere(ink,[0,-.46,-.075],[.13,.085,.21],legR);
+const sword=new THREE.Group();placeholder.add(sword);sword.position.set(.22,1.15,.16);sword.rotation.z=-.42;sword.rotation.x=-.12;part(new THREE.CylinderGeometry(.035,.045,.92,8),ink,[0,.42,0],sword);part(new THREE.BoxGeometry(.045,.82,.012),silver,[0,.45,-.027],sword);part(new THREE.BoxGeometry(.012,.76,.01),steel,[.018,.46,-.036],sword);part(new THREE.CylinderGeometry(.07,.07,.035,10),gold,[0,-.065,0],sword,[Math.PI/2,0,0]);part(new THREE.CylinderGeometry(.025,.03,.25,8),red,[0,-.21,0],sword);for(let i=0;i<4;i++)part(new THREE.BoxGeometry(.055,.018,.06),gold,[0,-.13-i*.045,.005],sword,[0,0,.5]);
 let characterMixer=null,characterActions={},currentCharacterAction=null,characterLoaded=false;
-function switchCharacterAnimation(state){if(!characterMixer)return;const next=characterActions[state]||characterActions.idle||Object.values(characterActions)[0];if(!next||next===currentCharacterAction)return;next.reset().fadeIn(.22).play();if(currentCharacterAction)currentCharacterAction.fadeOut(.22);currentCharacterAction=next;}
-const skin=mat(0xc9916e),jacket=mat(0x526f58),jacketShade=mat(0x3c5545),pants=mat(0x303a3b),boots=mat(0x282622),hair=mat(0x30251f),packMat=mat(0x786044),eyeMat=mat(0x211d1a);
-function part(geo,material,pos,parent=placeholder,scale=null){const o=new THREE.Mesh(geo,material);o.position.set(...pos);if(scale)o.scale.set(...scale);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
-const capsule=(radius,length,material,pos,parent=placeholder,scale=null)=>part(new THREE.CapsuleGeometry(radius,length,6,12),material,pos,parent,scale);
-const sphere=(material,pos,scale,parent=placeholder)=>part(new THREE.SphereGeometry(1,18,14),material,pos,parent,scale);
-// Rounded torso, waist and shoulders create a more natural silhouette.
-capsule(.31,.64,jacket,[0,1.34,0]);
-part(new THREE.SphereGeometry(.34,18,14),jacket,[0,1.62,0],placeholder,[1.12,.72,.78]);
-capsule(.22,.12,pants,[0,.91,0]);
-part(new THREE.SphereGeometry(.235,16,12),pants,[0,.91,0],placeholder,[1,.62,.86]);
-// Neck and head.
-capsule(.105,.13,skin,[0,1.84,0]);
-sphere(skin,[0,2.08,-.025],[.235,.29,.22]);
-sphere(hair,[0,2.23,.015],[.245,.19,.235]);
-// Hairline and side locks, all rounded instead of angular blocks.
-sphere(hair,[0,2.18,-.13],[.22,.14,.13]);
-sphere(hair,[-.218,2.09,.005],[.065,.16,.085]);
-sphere(hair,[.218,2.09,.005],[.065,.16,.085]);
-// Subtle face details point toward the character's forward direction (-Z).
-sphere(skin,[0,2.035,-.229],[.055,.045,.055]);
-sphere(eyeMat,[-.085,2.105,-.216],[.022,.026,.012]);
-sphere(eyeMat,[.085,2.105,-.216],[.022,.026,.012]);
-// Rounded hiking backpack and curved-looking shoulder straps.
-capsule(.16,.29,packMat,[0,1.37,.255],placeholder,[1.12,1,.58]);
-capsule(.035,.42,mat(0xb69a6b),[-.205,1.43,.13],placeholder,[1,.8,1]);
-capsule(.035,.42,mat(0xb69a6b),[.205,1.43,.13],placeholder,[1,.8,1]);
-// Arms pivot at the shoulders for a readable walking/running swing.
-const armL=new THREE.Group();armL.position.set(-.365,1.59,0);placeholder.add(armL);
-const armR=new THREE.Group();armR.position.set(.365,1.59,0);placeholder.add(armR);
-capsule(.105,.39,jacket,[0,-.23,0],armL);
-capsule(.082,.22,skin,[0,-.51,-.005],armL);
-capsule(.105,.39,jacket,[0,-.23,0],armR);
-capsule(.082,.22,skin,[0,-.51,-.005],armR);
-// Legs are rounded capsules; oval shoes avoid the old toy-block feet.
-const legL=new THREE.Group();legL.position.set(-.17,.86,0);placeholder.add(legL);
-const legR=new THREE.Group();legR.position.set(.17,.86,0);placeholder.add(legR);
-capsule(.115,.43,pants,[0,-.25,0],legL);
-capsule(.115,.43,pants,[0,-.25,0],legR);
-sphere(boots,[0,-.49,-.085],[.14,.09,.23],legL);
-sphere(boots,[0,-.49,-.085],[.14,.09,.23],legR);
-
-// Load a real skinned humanoid and use its built-in idle, walk and run clips.
-// The remote Soldier model has been removed. Only the built-in adventurer is used.
-
+function switchCharacterAnimation(state){if(!characterMixer)return;}
 const clouds=[];for(let i=0;i<18;i++){const cloud=new THREE.Group();const cm=new THREE.MeshStandardMaterial({color:0xf0f3e8,roughness:1,transparent:true,opacity:.7});for(let j=0;j<5;j++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1+rand()*1.5,9,7),cm);puff.position.set((rand()-.5)*5,rand()*1.2,(rand()-.5)*2);cloud.add(puff);}cloud.position.set((rand()-.5)*320,30+rand()*18,(rand()-.5)*320);cloud.scale.setScalar(1+rand()*2);scene.add(cloud);clouds.push(cloud);}
 
 // Nine ancient lights are hidden across the landscape.
@@ -165,8 +114,8 @@ let f=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),s=(keys.d||keys.ar
 if(f||s){const speed=(keys.shift?12:6)*dt,mag=Math.hypot(f,s);px+=(forward.x*f+right.x*s)/mag*speed;pz+=(forward.z*f+right.z*s)/mag*speed;walkT+=dt*(keys.shift?13:9);}
 px=Math.max(-174,Math.min(174,px));pz=Math.max(-174,Math.min(174,pz));
 const groundY=heightAt(px,pz);player.position.set(px,groundY,pz);player.rotation.y=yaw;
-const moving=!!(f||s),running=!!keys.shift;const stride=moving?Math.sin(walkT)*.72:0;armL.rotation.x=stride;armR.rotation.x=-stride;legL.rotation.x=-stride;legR.rotation.x=stride;player.position.y=groundY+(!characterLoaded&&moving?Math.abs(Math.sin(walkT*2))*.035:0);
-if(characterLoaded){switchCharacterAnimation(moving?(running?'run':'walk'):'idle');if(characterMixer)characterMixer.update(dt);}
+const moving=!!(f||s),running=!!keys.shift;const stride=moving?Math.sin(walkT)*.72:0;armL.rotation.x=stride;armR.rotation.x=-stride;legL.rotation.x=-stride;legR.rotation.x=stride;player.position.y=groundY+(moving?Math.abs(Math.sin(walkT*2))*.035:0);
+sword.rotation.z=-.42+(moving?Math.sin(walkT)*.035:0);
 const orbitDistance=4.8,orbitHeight=1.35+Math.sin(pitch)*4.2,horizontalDistance=orbitDistance*Math.cos(pitch);
 camera.position.set(px+Math.sin(yaw)*horizontalDistance,groundY+orbitHeight,pz+Math.cos(yaw)*horizontalDistance);camera.lookAt(px,groundY+.72,pz);
 lake.position.y=-.25+Math.sin(t*.7)*.04;waterMat.color.setHSL(.51,.35,.43+Math.sin(t*.4)*.025);
