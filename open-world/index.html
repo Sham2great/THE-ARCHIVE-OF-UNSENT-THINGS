@@ -137,9 +137,14 @@ characterLoader.load('https://threejs.org/examples/models/gltf/Soldier.glb',gltf
     const toonify=old=>new THREE.MeshToonMaterial({color:old.color||new THREE.Color(0xffffff),map:old.map||null,normalMap:old.normalMap||null,transparent:old.transparent||false,opacity:old.opacity??1,side:old.side??THREE.FrontSide,alphaTest:old.alphaTest||0});
     if(Array.isArray(node.material))node.material=node.material.map(toonify);else if(node.material)node.material=toonify(node.material);
   });
+  model.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
-  const targetHeight=.95;const scale=targetHeight/Math.max(size.y,.001);model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
-  model.rotation.y=Math.PI;player.add(model);placeholder.visible=false;animeOutfit.visible=true;characterLoaded=true;
+  const targetHeight=.95;const normalizedScale=targetHeight/Math.max(size.y,.001);
+  model.scale.setScalar(normalizedScale);model.position.y=-bounds.min.y*normalizedScale;
+  model.rotation.y=Math.PI;
+  // The downloaded rig replaces the handmade fallback completely, so two characters can never overlap.
+  placeholder.visible=false;placeholder.clear();player.remove(placeholder);
+  player.add(model);animeOutfit.visible=true;characterLoaded=true;
   characterMixer=new THREE.AnimationMixer(model);
   const clips=gltf.animations||[];
   const pick=pattern=>clips.find(clip=>pattern.test(clip.name));
