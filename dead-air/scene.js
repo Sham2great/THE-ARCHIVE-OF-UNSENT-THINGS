@@ -8,6 +8,9 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
   let keyLight, windowGlow, redLight, floor, cassette, photo, glass, table;
   let raf = 0, alive = true, mood = 'room', doorTarget = 0, figureTarget = 0;
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+  const keys = Object.create(null);
+  let yaw = 0, pitch = -0.08, dragging = false, lastX = 0, lastY = 0;
+  let walkX = 0, walkZ = 4.55, bob = 0;
   const materials = {};
   const temp = new THREE.Vector3();
 
@@ -45,8 +48,8 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
     scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x080b0b, 0.055);
     camera = new THREE.PerspectiveCamera(43, host.clientWidth/host.clientHeight, 0.1, 80);
-    camera.position.set(0, 2.1, 8.8);
-    camera.lookAt(0, 1.1, 0);
+    camera.position.set(0, 1.72, 4.55);
+    camera.lookAt(0, 1.6, 0);
     clock = new THREE.Clock();
 
     const world = new THREE.Group(); scene.add(world);
@@ -133,8 +136,23 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 
     const resize=()=>{if(!renderer)return;const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
     new ResizeObserver(resize).observe(host);
-    host.addEventListener('pointermove',e=>{const r=host.getBoundingClientRect();pointer.tx=((e.clientX-r.left)/r.width-.5)*.5;pointer.ty=((e.clientY-r.top)/r.height-.5)*.22;});
-    host.addEventListener('pointerleave',()=>{pointer.tx=0;pointer.ty=0;});
+    host.tabIndex=0;
+    host.setAttribute('aria-label','Interactive 3D room. Use W A S D or arrow keys to walk, and drag to look around.');
+    host.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;host.setPointerCapture?.(e.pointerId);host.focus({preventScroll:true});});
+    host.addEventListener('pointerup',()=>{dragging=false;});
+    host.addEventListener('pointercancel',()=>{dragging=false;});
+    host.addEventListener('pointermove',e=>{
+      if(dragging){const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.0045;pitch=Math.max(-.48,Math.min(.38,pitch-dy*.0035));}
+      else {const r=host.getBoundingClientRect();pointer.tx=((e.clientX-r.left)/r.width-.5)*.08;pointer.ty=((e.clientY-r.top)/r.height-.5)*.04;}
+    });
+    host.addEventListener('pointerleave',()=>{if(!dragging){pointer.tx=0;pointer.ty=0;}});
+    window.addEventListener('keydown',e=>{
+      if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return;
+      const k=e.key.toLowerCase();
+      if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k)){keys[k]=true;if(host.matches(':hover'))e.preventDefault();}
+    });
+    window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+    window.addEventListener('blur',()=>{Object.keys(keys).forEach(k=>keys[k]=false);dragging=false;});
     document.addEventListener('visibilitychange',()=>{alive=!document.hidden;if(alive&&!raf)animate();});
     const originalRender=window.renderDeadAir3D;
     window.renderDeadAir3D=()=>{};
@@ -159,13 +177,24 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
       raf=0;if(!alive||!renderer)return;raf=requestAnimationFrame(animate);
       const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
       pointer.x+=(pointer.tx-pointer.x)*.018;pointer.y+=(pointer.ty-pointer.y)*.018;
-      // Slow, human camera drift. Pointer control is subtle rather than gamey.
+      // Walkable first-person room: WASD/arrows move; dragging the scene turns the camera.
+      const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0);
+      const strafe=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
+      const moving=forward!==0||strafe!==0;
+      const length=Math.hypot(forward,strafe)||1;
+      const speed=(keys.shift?2.5:1.55)*dt;
+      walkX+=((strafe*Math.cos(yaw)-forward*Math.sin(yaw))/length)*speed;
+      walkZ+=((strafe*Math.sin(yaw)+forward*Math.cos(yaw))/length)*speed;
+      walkX=Math.max(-4.85,Math.min(4.85,walkX));
+      walkZ=Math.max(-2.25,Math.min(4.55,walkZ));
+      bob+=(moving?1:0-bob)*.05;
+      const step=Math.sin(t*10)*.025*(moving?1:0);
+      camera.position.set(walkX+Math.sin(t*.17)*.012,1.7+Math.sin(t*.23)*.018+step,walkZ);
+      const lookX=Math.sin(yaw)*Math.cos(pitch),lookY=Math.sin(pitch),lookZ=-Math.cos(yaw)*Math.cos(pitch);
+      camera.lookAt(walkX+lookX,1.7+lookY,walkZ+lookZ);
       const close=mood==='cellar'||mood==='paper'||mood==='tape'||mood==='photo';
-      camera.position.x=Math.sin(t*.14)*.15+pointer.x;
-      camera.position.y=2.05+Math.sin(t*.23)*.035-pointer.y;
-      const desiredZ=close?7.2:(mood==='outside'?10.3:8.8);
-      camera.position.z+=(desiredZ-camera.position.z)*.008;
-      camera.lookAt(Math.sin(t*.12)*.1+pointer.x*.25,1.2+Math.sin(t*.18)*.025, -1.0);
+      // Narrative reveals alter the room lighting without taking movement away.
+      keyLight.distance=close?7:9;
       doorPivot.rotation.y+=(doorTarget*(-1.05)-doorPivot.rotation.y)*.018;
       const fs=figure.scale.x+(figureTarget-figure.scale.x)*.025;figure.scale.setScalar(fs);
       figure.position.x=1.2+Math.sin(t*.45)*.035;
