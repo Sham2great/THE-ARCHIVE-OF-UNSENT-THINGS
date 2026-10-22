@@ -113,7 +113,7 @@ characterLoader.load('https://threejs.org/examples/models/gltf/Soldier.glb',gltf
     if(Array.isArray(node.material))node.material=node.material.map(toonify);else if(node.material)node.material=toonify(node.material);
   });
   const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
-  const scale=2.25/Math.max(size.y,.001);model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
+  const scale=1.72/Math.max(size.y,.001);model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
   model.rotation.y=Math.PI;player.add(model);placeholder.visible=false;characterLoaded=true;
   characterMixer=new THREE.AnimationMixer(model);
   const clips=gltf.animations||[];
