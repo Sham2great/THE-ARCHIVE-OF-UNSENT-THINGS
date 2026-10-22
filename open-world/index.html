@@ -8,9 +8,9 @@
 </style>
 </head>
 <body><div id="world"></div>
-<div id="hud"><div id="brand">WILDLANDS<span>AN OPEN WORLD, WITH NO MAP</span></div><div id="location">THE GREEN REACH</div><div id="stats">DAY 01<br><span id="coords">000 · 000</span></div><div id="crosshair"></div><div id="bottom">W A S D / ARROWS · MOVE<br>MOUSE · LOOK AROUND<br>SHIFT · RUN</div><div id="prompt">A WORLD THAT DOESN'T NEED YOU</div><div id="notice">YOU FOUND SOMETHING</div><div id="interact">PRESS E TO INTERACT</div><div id="quest">WANDERER'S JOURNAL<br><span id="collected">LIGHTS FOUND: 0 / 9</span><br><span id="daylabel">DAYLIGHT</span></div>
+<div id="hud"><div id="brand">WILDLANDS<span>AN OPEN WORLD, WITH NO MAP</span></div><div id="location">THE GREEN REACH</div><div id="stats">DAY 01<br><span id="coords">000 · 000</span></div><div id="crosshair"></div><div id="bottom">W A S D / ARROWS · MOVE<br>MOUSE · ORBIT CAMERA<br>SHIFT · RUN</div><div id="prompt">A WORLD THAT DOESN'T NEED YOU</div><div id="notice">YOU FOUND SOMETHING</div><div id="interact">PRESS E TO INTERACT</div><div id="quest">WANDERER'S JOURNAL<br><span id="collected">LIGHTS FOUND: 0 / 9</span><br><span id="daylabel">DAYLIGHT</span></div>
 <div id="mobile"><button class="move up" data-key="w">↑</button><button class="move left" data-key="a">←</button><button class="move down" data-key="s">↓</button><button class="move right" data-key="d">→</button></div></div>
-<div id="intro"><div id="panel"><div id="eyebrow">A SMALL WORLD TO GET LOST IN</div><h1>WILD<br>LANDS.</h1><p id="desc">A quiet, hand-built landscape. Walk through forests, climb the hills, find the lake, and see what lies beyond the next ridge.</p><button id="enter">STEP INTO THE WORLD</button><div id="tips">DESKTOP: WASD TO WALK · CLICK + DRAG TO LOOK<br>MOBILE: USE THE ARROWS · DRAG THE WORLD TO LOOK</div></div></div>
+<div id="intro"><div id="panel"><div id="eyebrow">A SMALL WORLD TO GET LOST IN</div><h1>WILD<br>LANDS.</h1><p id="desc">A quiet, hand-built landscape. Walk through forests, climb the hills, find the lake, and see what lies beyond the next ridge.</p><button id="enter">STEP INTO THE WORLD</button><div id="tips">THIRD-PERSON VIEW · WASD TO WALK · MOUSE TO ORBIT<br>MOBILE: ARROWS TO MOVE · DRAG TO ROTATE CAMERA</div></div></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const host=document.querySelector('#world'),intro=document.querySelector('#intro');
@@ -52,6 +52,20 @@ const roof1=box(cabin,[4.2,.28,7.1],[-1.7,5.4,0],mat(0x554b3d));roof1.rotation.z
 box(cabin,[1.35,2.7,.18],[0,1.35,3.08],mat(0x302c24));box(cabin,[.9,.95,.1],[2,2.7,3.11],mat(0xb3a47b,.4));box(cabin,[.1,1.05,.13],[2,2.7,3.2],mat(0x4c4536));
 const pathMat=mat(0xb3a77e);
 for(let i=0;i<20;i++){const t=i/20,x=4+t*24,z=-2-t*37;const stone=new THREE.Mesh(new THREE.BoxGeometry(1.4,.06,1.1),pathMat);stone.position.set(x,heightAt(x,z)+.04,z);stone.rotation.y=.2;scene.add(stone);}
+
+// Third-person adventurer. Separate body parts make the walk cycle visible.
+const player=new THREE.Group();scene.add(player);
+const skin=mat(0xd6a47d),jacket=mat(0x476b55),pants=mat(0x303b3a),boots=mat(0x211f1d),hair=mat(0x302820);
+function part(geo,material,pos,parent=player){const o=new THREE.Mesh(geo,material);o.position.set(...pos);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
+part(new THREE.CapsuleGeometry(.36,.68,4,8),jacket,[0,1.25,0]);
+part(new THREE.SphereGeometry(.27,12,10),skin,[0,1.98,0]);
+part(new THREE.SphereGeometry(.28,12,8),hair,[0,2.12,.035]);
+const pack=part(new THREE.BoxGeometry(.48,.58,.22),mat(0x725c40),[0,1.32,.34]);
+const armL=new THREE.Group();armL.position.set(-.43,1.52,0);player.add(armL);part(new THREE.CapsuleGeometry(.115,.46,3,6),jacket,[0,-.25,0],armL);part(new THREE.SphereGeometry(.11,8,6),skin,[0,-.53,0],armL);
+const armR=new THREE.Group();armR.position.set(.43,1.52,0);player.add(armR);part(new THREE.CapsuleGeometry(.115,.46,3,6),jacket,[0,-.25,0],armR);part(new THREE.SphereGeometry(.11,8,6),skin,[0,-.53,0],armR);
+const legL=new THREE.Group();legL.position.set(-.19,.86,0);player.add(legL);part(new THREE.CapsuleGeometry(.14,.48,3,6),pants,[0,-.24,0],legL);part(new THREE.BoxGeometry(.24,.13,.4),boots,[0,-.52,-.08],legL);
+const legR=new THREE.Group();legR.position.set(.19,.86,0);player.add(legR);part(new THREE.CapsuleGeometry(.14,.48,3,6),pants,[0,-.24,0],legR);part(new THREE.BoxGeometry(.24,.13,.4),boots,[0,-.52,-.08],legR);
+
 const clouds=[];for(let i=0;i<18;i++){const cloud=new THREE.Group();const cm=new THREE.MeshStandardMaterial({color:0xf0f3e8,roughness:1,transparent:true,opacity:.7});for(let j=0;j<5;j++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1+rand()*1.5,9,7),cm);puff.position.set((rand()-.5)*5,rand()*1.2,(rand()-.5)*2);cloud.add(puff);}cloud.position.set((rand()-.5)*320,30+rand()*18,(rand()-.5)*320);cloud.scale.setScalar(1+rand()*2);scene.add(cloud);clouds.push(cloud);}
 
 // Nine ancient lights are hidden across the landscape.
@@ -88,7 +102,10 @@ forward.set(-Math.sin(yaw),0,-Math.cos(yaw));right.set(Math.cos(yaw),0,-Math.sin
 let f=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),s=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
 if(f||s){const speed=(keys.shift?12:6)*dt,mag=Math.hypot(f,s);px+=(forward.x*f+right.x*s)/mag*speed;pz+=(forward.z*f+right.z*s)/mag*speed;walkT+=dt*(keys.shift?13:9);}
 px=Math.max(-174,Math.min(174,px));pz=Math.max(-174,Math.min(174,pz));
-const groundY=heightAt(px,pz);camera.position.set(px,groundY+1.72+Math.sin(walkT)*((f||s) ? .045 : 0),pz);camera.rotation.y=yaw;camera.rotation.x=pitch;
+const groundY=heightAt(px,pz);player.position.set(px,groundY,pz);player.rotation.y=yaw;
+const moving=!!(f||s);const stride=moving?Math.sin(walkT)*.72:0;armL.rotation.x=stride;armR.rotation.x=-stride;legL.rotation.x=-stride;legR.rotation.x=stride;player.position.y=groundY+(moving?Math.abs(Math.sin(walkT*2))*.035:0);
+const orbitDistance=6.2,orbitHeight=2.35+Math.sin(pitch)*4.2,horizontalDistance=orbitDistance*Math.cos(pitch);
+camera.position.set(px+Math.sin(yaw)*horizontalDistance,groundY+orbitHeight,pz+Math.cos(yaw)*horizontalDistance);camera.lookAt(px,groundY+1.35,pz);
 lake.position.y=-.25+Math.sin(t*.7)*.04;waterMat.color.setHSL(.51,.35,.43+Math.sin(t*.4)*.025);
 clouds.forEach(c=>{c.position.x+=dt*.65;if(c.position.x>190)c.position.x=-190;});
 
