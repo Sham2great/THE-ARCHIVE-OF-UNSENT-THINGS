@@ -58,34 +58,11 @@ for(let i=0;i<20;i++){const t=i/20,x=4+t*24,z=-2-t*37;const stone=new THREE.Mesh
 // A softer, more human-shaped adventurer with rounded proportions and layered clothing.
 const player=new THREE.Group();scene.add(player);
 const placeholder=new THREE.Group();player.add(placeholder);placeholder.visible=true;
-const animeOutfit=new THREE.Group();animeOutfit.scale.setScalar(.95/1.72);animeOutfit.visible=false;player.add(animeOutfit);
-const cloth=color=>new THREE.MeshToonMaterial({color});
-function outfitMesh(geometry,material,position,rotation=[0,0,0],scale=[1,1,1]){const mesh=new THREE.Mesh(geometry,material);mesh.position.set(...position);mesh.rotation.set(...rotation);mesh.scale.set(...scale);mesh.castShadow=true;mesh.receiveShadow=true;animeOutfit.add(mesh);return mesh;}
-const midnight=cloth(0x202b43),teal=cloth(0x355c67),red=cloth(0x9f3d48),gold=cloth(0xc8a45c),steel=cloth(0xcbd4dd);
-outfitMesh(new THREE.BoxGeometry(.24,.72,.055),teal,[-.105,1.02,.205],[-.08,0,-.025]);
-outfitMesh(new THREE.BoxGeometry(.24,.72,.055),midnight,[.105,1.02,.205],[.08,0,.025]);
-outfitMesh(new THREE.BoxGeometry(.46,.13,.32),midnight,[0,1.42,0]);
-outfitMesh(new THREE.BoxGeometry(.43,.075,.33),gold,[0,1.24,0]);
-outfitMesh(new THREE.BoxGeometry(.18,.1,.35),red,[0,1.235,-.015]);
-outfitMesh(new THREE.BoxGeometry(.27,.55,.045),midnight,[0,.78,-.18],[-.08,0,0]);
-outfitMesh(new THREE.BoxGeometry(.14,.48,.05),teal,[-.19,.78,-.1],[0,0,-.08]);
-outfitMesh(new THREE.BoxGeometry(.14,.48,.05),teal,[.19,.78,-.1],[0,0,.08]);
-outfitMesh(new THREE.SphereGeometry(.14,12,8),midnight,[-.32,1.34,0],[0,0,.2],[1,.55,1]);
-outfitMesh(new THREE.SphereGeometry(.14,12,8),midnight,[.32,1.34,0],[0,0,-.2],[1,.55,1]);
-outfitMesh(new THREE.BoxGeometry(.018,.58,.018),gold,[-.225,.98,.24]);
-outfitMesh(new THREE.BoxGeometry(.018,.58,.018),gold,[.225,.98,.24]);
-const katana=new THREE.Group();animeOutfit.add(katana);katana.position.set(.34,1.02,-.12);katana.rotation.set(.12,0,-.2);
-const blade=new THREE.Mesh(new THREE.BoxGeometry(.045,.82,.018),steel);blade.position.y=.49;katana.add(blade);
-const bladeEdge=new THREE.Mesh(new THREE.BoxGeometry(.012,.79,.008),cloth(0xffffff));bladeEdge.position.set(.025,.49,.012);katana.add(bladeEdge);
-const guard=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.035,12),gold);guard.rotation.z=Math.PI/2;guard.position.y=.065;katana.add(guard);
-const grip=new THREE.Mesh(new THREE.CylinderGeometry(.027,.035,.22,8),midnight);grip.position.y=-.065;katana.add(grip);
-const pommel=new THREE.Mesh(new THREE.SphereGeometry(.04,8,6),gold);pommel.position.y=-.18;katana.add(pommel);
-const sheath=new THREE.Mesh(new THREE.BoxGeometry(.07,.88,.065),midnight);sheath.position.set(-.28,1.04,-.22);sheath.rotation.z=-.24;animeOutfit.add(sheath);
-outfitMesh(new THREE.BoxGeometry(.085,.04,.08),gold,[-.28,1.1,-.18],[0,0,-.24]);
+const animeOutfit=new THREE.Group();animeOutfit.visible=false;player.add(animeOutfit);
 
 let characterMixer=null,characterActions={},currentCharacterAction=null,characterLoaded=false;
 function switchCharacterAnimation(state){if(!characterMixer)return;const next=characterActions[state]||characterActions.idle||Object.values(characterActions)[0];if(!next||next===currentCharacterAction)return;next.reset().fadeIn(.22).play();if(currentCharacterAction)currentCharacterAction.fadeOut(.22);currentCharacterAction=next;}
-const skin=mat(0xc9916e),jacket=mat(0x526f58),jacketShade=mat(0x3c5545),pants=mat(0x303a3b),boots=mat(0x282622),hair=mat(0x30251f),packMat=mat(0x786044),eyeMat=mat(0x211d1a);
+const skin=mat(0xe0b49a),jacket=mat(0x202b43),jacketShade=mat(0x355c67),pants=mat(0x202535),boots=mat(0x171923),hair=mat(0x20202a),packMat=mat(0x202b43),eyeMat=mat(0x243b56);
 function part(geo,material,pos,parent=placeholder,scale=null){const o=new THREE.Mesh(geo,material);o.position.set(...pos);if(scale)o.scale.set(...scale);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
 const capsule=(radius,length,material,pos,parent=placeholder,scale=null)=>part(new THREE.CapsuleGeometry(radius,length,6,12),material,pos,parent,scale);
 const sphere=(material,pos,scale,parent=placeholder)=>part(new THREE.SphereGeometry(1,18,14),material,pos,parent,scale);
@@ -98,6 +75,8 @@ part(new THREE.SphereGeometry(.235,16,12),pants,[0,.91,0],placeholder,[1,.62,.86
 capsule(.105,.13,skin,[0,1.84,0]);
 sphere(skin,[0,2.08,-.025],[.235,.29,.22]);
 sphere(hair,[0,2.23,.015],[.245,.19,.235]);
+// Soft pointed anime fringe and swept-back hair tufts.
+for(const [x,y,z,rz] of [[-.14,2.16,-.17,-.35],[0,2.18,-.2,0],[.13,2.17,-.17,.35],[-.12,2.29,.04,-.55],[.08,2.31,.06,.42]]){const tuft=part(new THREE.ConeGeometry(.085,.24,8),hair,[x,y,z]);tuft.rotation.z=rz;}
 // Hairline and side locks, all rounded instead of angular blocks.
 sphere(hair,[0,2.18,-.13],[.22,.14,.13]);
 sphere(hair,[-.218,2.09,.005],[.065,.16,.085]);
@@ -124,37 +103,19 @@ capsule(.115,.43,pants,[0,-.25,0],legL);
 capsule(.115,.43,pants,[0,-.25,0],legR);
 sphere(boots,[0,-.49,-.085],[.14,.09,.23],legL);
 sphere(boots,[0,-.49,-.085],[.14,.09,.23],legR);
+// Flowing coat tails and a slim sheathed katana, built from rounded forms rather than box panels.
+const coatTailL=capsule(.105,.46,jacketShade,[-.16,.82,.11],placeholder,[.9,1.25,.48]);coatTailL.rotation.z=-.16;
+const coatTailR=capsule(.105,.46,jacket,[.16,.82,.11],placeholder,[.9,1.25,.48]);coatTailR.rotation.z=.16;
+const katanaRig=new THREE.Group();katanaRig.position.set(-.22,1.28,.18);katanaRig.rotation.x=-.18;katanaRig.rotation.z=-.42;placeholder.add(katanaRig);
+const swordMat=mat(0xcbd4dd),swordGold=mat(0xc8a45c),swordDark=mat(0x171923);
+const swordBlade=new THREE.Mesh(new THREE.CylinderGeometry(.018,.027,.78,8),swordMat);swordBlade.position.y=.48;katanaRig.add(swordBlade);
+const swordHandle=new THREE.Mesh(new THREE.CylinderGeometry(.026,.03,.22,8),swordDark);swordHandle.position.y=-.02;katanaRig.add(swordHandle);
+const swordGuard=new THREE.Mesh(new THREE.TorusGeometry(.065,.012,6,12),swordGold);swordGuard.position.y=.09;katanaRig.add(swordGuard);
+const swordSheath=new THREE.Mesh(new THREE.CylinderGeometry(.04,.05,.86,8),swordDark);swordSheath.position.set(-.07,.46,.025);swordSheath.rotation.z=-.18;katanaRig.add(swordSheath);
 
-// Load a real skinned humanoid and use its built-in idle, walk and run clips.
-// Cel shading gives the model a cleaner anime-inspired finish. The handmade
-// character remains visible if the remote asset cannot be loaded.
-const characterLoader=new GLTFLoader();
-characterLoader.load('https://threejs.org/examples/models/gltf/Soldier.glb',gltf=>{
-  const model=gltf.scene;
-  model.traverse(node=>{
-    if(!node.isMesh)return;
-    node.castShadow=true;node.receiveShadow=true;
-    const toonify=old=>new THREE.MeshToonMaterial({color:old.color||new THREE.Color(0xffffff),map:old.map||null,normalMap:old.normalMap||null,transparent:old.transparent||false,opacity:old.opacity??1,side:old.side??THREE.FrontSide,alphaTest:old.alphaTest||0});
-    if(Array.isArray(node.material))node.material=node.material.map(toonify);else if(node.material)node.material=toonify(node.material);
-  });
-  model.updateMatrixWorld(true);
-  const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
-  const targetHeight=.95;const normalizedScale=targetHeight/Math.max(size.y,.001);
-  model.scale.setScalar(normalizedScale);model.position.y=-bounds.min.y*normalizedScale;
-  model.rotation.y=Math.PI;
-  // The downloaded rig replaces the handmade fallback completely, so two characters can never overlap.
-  placeholder.visible=false;placeholder.clear();player.remove(placeholder);
-  player.add(model);animeOutfit.visible=true;characterLoaded=true;
-  characterMixer=new THREE.AnimationMixer(model);
-  const clips=gltf.animations||[];
-  const pick=pattern=>clips.find(clip=>pattern.test(clip.name));
-  const idle=pick(/idle|stand/i)||clips[0],walk=pick(/walk/i)||idle,run=pick(/run/i)||walk;
-  if(idle)characterActions.idle=characterMixer.clipAction(idle);
-  if(walk)characterActions.walk=characterMixer.clipAction(walk);
-  if(run)characterActions.run=characterMixer.clipAction(run);
-  switchCharacterAnimation('idle');
-},undefined,error=>{console.warn('WILDLANDS character model failed to load; keeping the fallback character.',error);placeholder.visible=true;document.querySelector('#notice').textContent='CHARACTER MODEL FAILED TO LOAD';document.querySelector('#notice').classList.add('show');});
-const clouds=[];for(let i=0;i<18;i++){const cloud=new THREE.Group();const cm=new THREE.MeshStandardMaterial({color:0xf0f3e8,roughness:1,transparent:true,opacity:.7});for(let j=0;j<5;j++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1+rand()*1.5,9,7),cm);puff.position.set((rand()-.5)*5,rand()*1.2,(rand()-.5)*2);cloud.add(puff);}cloud.position.set((rand()-.5)*320,30+rand()*18,(rand()-.5)*320);cloud.scale.setScalar(1+rand()*2);scene.add(cloud);clouds.push(cloud);}
+// Use the custom anime adventurer instead of the unrelated military Soldier asset.
+placeholder.scale.setScalar(.48);
+characterLoaded=false;
 
 // Nine ancient lights are hidden across the landscape.
 const relics=[];const relicGeo=new THREE.OctahedronGeometry(.72,0);
