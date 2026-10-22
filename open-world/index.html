@@ -70,7 +70,7 @@ forward.set(-Math.sin(yaw),0,-Math.cos(yaw));right.set(Math.cos(yaw),0,-Math.sin
 let f=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),s=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
 if(f||s){const speed=(keys.shift?12:6)*dt,mag=Math.hypot(f,s);px+=(forward.x*f+right.x*s)/mag*speed;pz+=(forward.z*f+right.z*s)/mag*speed;walkT+=dt*(keys.shift?13:9);}
 px=Math.max(-174,Math.min(174,px));pz=Math.max(-174,Math.min(174,pz));
-const groundY=heightAt(px,pz);camera.position.set(px,groundY+1.72+Math.sin(walkT)*((f||s)?.045:0),pz);camera.rotation.y=yaw;camera.rotation.x=pitch;
+const groundY=heightAt(px,pz);camera.position.set(px,groundY+1.72+Math.sin(walkT)*((f||s) ? .045 : 0),pz);camera.rotation.y=yaw;camera.rotation.x=pitch;
 lake.position.y=-.25+Math.sin(t*.7)*.04;waterMat.color.setHSL(.51,.35,.43+Math.sin(t*.4)*.025);
 clouds.forEach(c=>{c.position.x+=dt*.65;if(c.position.x>190)c.position.x=-190;});
 const dCab=Math.hypot(px-cx,pz-cz);const dLake=Math.hypot(px+18,pz+14);let place='THE GREEN REACH';if(dCab<22)place='THE OLD CABIN';else if(dLake<25)place='MIRROR LAKE';else if(Math.abs(px)>95||Math.abs(pz)>95)place='THE FAR COUNTRY';document.querySelector('#location').textContent=place;document.querySelector('#coords').textContent=String(Math.round(px)).padStart(3,'0')+' · '+String(Math.round(pz)).padStart(3,'0');
