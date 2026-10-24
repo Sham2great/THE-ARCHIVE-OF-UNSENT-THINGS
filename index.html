@@ -277,6 +277,30 @@ body:before{opacity:.035;background:repeating-linear-gradient(0deg,transparent 0
 @keyframes offer-and-fall{0%,10%{translate:0 0;rotate:0deg;opacity:1}38%{translate:8px 0;rotate:3deg;opacity:1}60%{translate:3px 3px;rotate:-5deg;opacity:.72}100%{translate:0 0;rotate:0deg;opacity:1}}
 .scene-present{background:linear-gradient(#eaf6fd,#c9e4f6)!important}.present-stick{animation:present-breathe 5s ease-in-out infinite!important}@keyframes present-breathe{0%,100%{translate:0 0;opacity:.62}50%{translate:0 4px;opacity:.32}}
 @media(prefers-reduced-motion:reduce){.memory-scene:after,.memory-scene .stick,.memory-scene .stick b,.memory-scene .stick em,.memory-scene .stick u,.memory-scene .stick small,.memory-scene .stick:before,.memory-scene .stick:after{animation:none!important}}
+
+/* Cleaner articulated SVG characters layered over the existing timeline scenes. */
+.memory-scene .stick.svg-figure{width:40px;height:88px;overflow:visible;color:#a9d7ef;--ink:#a9d7ef}
+.memory-scene .stick.svg-figure:before,.memory-scene .stick.svg-figure:after{content:none!important;display:none!important}
+.memory-scene .stick.svg-figure b,.memory-scene .stick.svg-figure em,.memory-scene .stick.svg-figure u,.memory-scene .stick.svg-figure small{display:none!important}
+.memory-scene .stick.svg-figure .figure-art{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.memory-scene .stick.svg-figure .figure-art .head{transform-box:fill-box;transform-origin:center;animation:svg-head-tilt 4.2s ease-in-out infinite}
+.memory-scene .stick.svg-figure .figure-art .torso{transform-box:fill-box;transform-origin:top center;animation:svg-torso-sway 3.6s ease-in-out infinite}
+.memory-scene .stick.svg-figure .figure-art .arm-left,.memory-scene .stick.svg-figure .figure-art .arm-right{transform-box:fill-box;transform-origin:top center;animation:svg-arm-sway 3.2s ease-in-out infinite}
+.memory-scene .stick.svg-figure .figure-art .leg-left,.memory-scene .stick.svg-figure .figure-art .leg-right{transform-box:fill-box;transform-origin:top center;animation:svg-leg-sway 1.7s ease-in-out infinite}
+.memory-scene .stick.svg-figure .figure-art .arm-right,.memory-scene .stick.svg-figure .figure-art .leg-right{animation-delay:-.8s}
+.memory-scene .stick.svg-figure.child-stick .figure-art .arm-left{animation:svg-reach 5s ease-in-out infinite}
+.memory-scene .stick.svg-figure.school-alone .figure-art .torso{animation:svg-hesitate 4.5s ease-in-out infinite}
+.memory-scene .stick.svg-figure.void-stick .figure-art .arms{animation:svg-droop 4s ease-in-out infinite}
+.memory-scene .stick.svg-figure .figure-art line,.memory-scene .stick.svg-figure .figure-art circle{vector-effect:non-scaling-stroke}
+@keyframes svg-head-tilt{0%,100%{transform:rotate(0)}45%{transform:rotate(-7deg)}65%{transform:rotate(3deg)}}
+@keyframes svg-torso-sway{0%,100%{transform:rotate(0)}50%{transform:rotate(2deg)}}
+@keyframes svg-arm-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(9deg)}}
+@keyframes svg-leg-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(5deg)}}
+@keyframes svg-reach{0%,25%{transform:rotate(-12deg)}55%,100%{transform:rotate(32deg)}}
+@keyframes svg-hesitate{0%,25%{transform:translateX(0) rotate(0)}48%{transform:translateX(-2px) rotate(-4deg)}72%,100%{transform:translateX(1px) rotate(2deg)}}
+@keyframes svg-droop{0%,100%{transform:rotate(0)}55%{transform:rotate(10deg)}}
+@media(prefers-reduced-motion:reduce){.memory-scene .stick.svg-figure .figure-art *{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -309,6 +333,31 @@ window.addEventListener('scroll',updateScroll,{passive:true});window.addEventLis
 const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.13});document.querySelectorAll('.reveal,.chapter').forEach(el=>observer.observe(el));
 document.getElementById('begin').addEventListener('click',()=>document.getElementById('timeline').scrollIntoView({behavior:'smooth'}));document.getElementById('backTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));updateScroll();
 
+
+
+/* Replace the old pseudo-element figures with real articulated SVG drawings. */
+(function(){
+ const figures=document.querySelectorAll('.memory-scene .stick');
+ figures.forEach(function(person,index){
+  if(person.classList.contains('svg-figure'))return;
+  person.classList.add('svg-figure');
+  const ink=getComputedStyle(person).getPropertyValue('--ink').trim()||'#a9d7ef';
+  const isChild=person.classList.contains('child-stick');
+  const isCrowd=person.closest('.crowd-child')||person.closest('.school-row')||person.closest('.orbiting-people');
+  const pose=isChild?'child':(person.classList.contains('school-alone')?'alone':(isCrowd?'crowd':'standing'));
+  const armL=pose==='child'?'M20 31 Q9 22 5 17':'M20 31 Q12 39 9 47';
+  const armR=pose==='alone'?'M20 31 Q31 39 32 46':'M20 31 Q28 38 31 46';
+  const legL=pose==='child'?'M20 48 Q10 57 8 65':'M20 48 L13 67';
+  const legR=pose==='child'?'M20 48 Q30 55 30 62':'M20 48 L27 67';
+  person.innerHTML='<svg class="figure-art" viewBox="0 0 40 82" aria-hidden="true" focusable="false">'+
+   '<g class="head"><circle cx="20" cy="12" r="7" fill="#0b1118" stroke="'+ink+'" stroke-width="2.2"/><path d="M16 13 Q20 16 24 13" fill="none" stroke="'+ink+'" stroke-width="1" opacity=".65"/></g>'+
+   '<g class="torso"><path d="M20 21 L20 48" fill="none" stroke="'+ink+'" stroke-width="2.8" stroke-linecap="round"/></g>'+
+   '<g class="arms"><path class="arm-left" d="'+armL+'" fill="none" stroke="'+ink+'" stroke-width="2.4" stroke-linecap="round"/><path class="arm-right" d="'+armR+'" fill="none" stroke="'+ink+'" stroke-width="2.4" stroke-linecap="round"/></g>'+
+   '<path class="leg-left" d="'+legL+'" fill="none" stroke="'+ink+'" stroke-width="2.6" stroke-linecap="round"/>'+
+   '<path class="leg-right" d="'+legR+'" fill="none" stroke="'+ink+'" stroke-width="2.6" stroke-linecap="round"/>'+
+   '<circle cx="20" cy="28" r="1.8" fill="'+ink+'" opacity=".55"/></svg>';
+ });
+})();
 
 /* Scroll-aware scene director: animations react automatically as memories enter view. */
 (function(){
