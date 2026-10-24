@@ -331,6 +331,65 @@ window.addEventListener('scroll',()=>{if(!cinemaTick){requestAnimationFrame(dire
 window.addEventListener('resize',directCinema);
 directCinema();
 
+
+/* Interactive archive layer: directory, local ambience, discoveries, drafts and branching ending. */
+const archivePanel=document.getElementById('archivePanel');
+const toast=document.getElementById('archiveToast');
+let toastTimer;
+function showArchiveToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2800)}
+function openArchive(){archivePanel.classList.add('open');archivePanel.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}
+function closeArchive(){archivePanel.classList.remove('open');archivePanel.setAttribute('aria-hidden','true');document.body.style.overflow=''}
+document.getElementById('archiveOpen').addEventListener('click',openArchive);
+document.getElementById('archiveClose').addEventListener('click',closeArchive);
+archivePanel.addEventListener('click',e=>{if(e.target===archivePanel)closeArchive()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeArchive()});
+const archiveNav=document.getElementById('archiveNav');
+const archiveChapters=[...document.querySelectorAll('.chapter')];
+const archiveNames=['Early years / Wanted to be seen','Primary school / Outside looking in','Grades 7–8 / The decision','Dev / The unanswered','Tyra / The contradiction','Jada / The turning point','The present / Feeling at low volume'];
+archiveChapters.forEach((chapter,i)=>{const b=document.createElement('button');const label=document.createElement('span');label.textContent='0'+(i+1)+' / '+archiveNames[i];const small=document.createElement('small');small.textContent='OPEN ↗';b.append(label,small);b.addEventListener('click',()=>{closeArchive();chapter.scrollIntoView({behavior:'smooth',block:'center'});chapter.classList.add('visible')});archiveNav.appendChild(b)});
+let discoveredScenes=new Set();
+function unlockSecret(){const locked=document.getElementById('lockedRecord');locked.classList.add('unlocked');locked.innerHTML='<span class="lock-mark">✳</span><div><b>RECORD 008 / UNFINISHED</b><small>UNLOCKED · OPEN RECOVERED FILE ↗</small></div>';locked.onclick=()=>{closeArchive();const secret=document.getElementById('secretRecord');secret.classList.add('unlocked');secret.scrollIntoView({behavior:'smooth',block:'center'})}}
+function discoverScene(scene){if(!scene||scene.dataset.discovered==='true')return;scene.dataset.discovered='true';scene.classList.add('scene-discovered');discoveredScenes.add(scene);if(discoveredScenes.size>=3){showArchiveToast('THREE MEMORIES RECOVERED · RECORD 008 UNLOCKED');unlockSecret()}else showArchiveToast('MEMORY RECOVERED · '+discoveredScenes.size+'/3 SCENES EXPLORED')}
+sceneNodes.forEach(scene=>{scene.tabIndex=0;scene.setAttribute('role','button');scene.setAttribute('aria-label',(scene.getAttribute('aria-label')||'Memory scene')+' · activate to recover this memory');scene.addEventListener('click',()=>{discoverScene(scene);scene.animate([{filter:'brightness(1)'},{filter:'brightness(1.8)'},{filter:'brightness(1.12)'}],{duration:650,easing:'ease-out'})});scene.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();scene.click()}})});
+/* Ambient room tone is synthesized locally and starts only after the reader opts in. */
+let audioContext=null,masterGain=null,soundOn=false;
+function startAmbience(){
+ const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+ if(!AudioContextClass){showArchiveToast('AMBIENT AUDIO IS NOT SUPPORTED IN THIS BROWSER');return}
+ audioContext=audioContext||new AudioContextClass();audioContext.resume();
+ if(!masterGain){
+  masterGain=audioContext.createGain();masterGain.gain.value=0;masterGain.connect(audioContext.destination);
+  [55,82.41,110].forEach((freq,i)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain(),filter=audioContext.createBiquadFilter();osc.type=i===1?'triangle':'sine';osc.frequency.value=freq;filter.type='lowpass';filter.frequency.value=180;gain.gain.value=[.16,.08,.035][i];osc.connect(filter);filter.connect(gain);gain.connect(masterGain);osc.start()});
+  const size=audioContext.sampleRate*2,buffer=audioContext.createBuffer(1,size,audioContext.sampleRate),data=buffer.getChannelData(0);
+  for(let i=0;i<size;i++)data[i]=(Math.random()*2-1)*.12;
+  const noise=audioContext.createBufferSource(),noiseGain=audioContext.createGain(),noiseFilter=audioContext.createBiquadFilter();noise.buffer=buffer;noise.loop=true;noiseFilter.type='lowpass';noiseFilter.frequency.value=350;noiseGain.gain.value=.12;noise.connect(noiseFilter);noiseFilter.connect(noiseGain);noiseGain.connect(masterGain);noise.start();
+ }
+ masterGain.gain.cancelScheduledValues(audioContext.currentTime);masterGain.gain.setTargetAtTime(.18,audioContext.currentTime,.8);soundOn=true;document.body.classList.add('sound-on');document.getElementById('soundLabel').textContent='SOUND ON';document.getElementById('soundToggle').setAttribute('aria-pressed','true');showArchiveToast('AMBIENT ROOM TONE ENABLED · CLICK AGAIN TO MUTE');
+}
+function stopAmbience(){if(masterGain&&audioContext){masterGain.gain.cancelScheduledValues(audioContext.currentTime);masterGain.gain.setTargetAtTime(0,audioContext.currentTime,.25)}soundOn=false;document.body.classList.remove('sound-on');document.getElementById('soundLabel').textContent='SOUND OFF';document.getElementById('soundToggle').setAttribute('aria-pressed','false')}
+document.getElementById('soundToggle').addEventListener('click',()=>soundOn?stopAmbience():startAmbience());
+document.getElementById('cursorToggle').addEventListener('click',()=>{const enabled=document.body.classList.toggle('archive-focus');document.getElementById('cursorToggle').setAttribute('aria-pressed',String(enabled));showArchiveToast(enabled?'FOCUS CURSOR ENABLED':'FOCUS CURSOR DISABLED')});
+const customCursor=document.getElementById('archiveCursor');
+document.addEventListener('pointermove',e=>{customCursor.style.left=e.clientX+'px';customCursor.style.top=e.clientY+'px'});
+document.querySelectorAll('button,a,.memory-scene').forEach(el=>{el.addEventListener('pointerenter',()=>customCursor.classList.add('hovering'));el.addEventListener('pointerleave',()=>customCursor.classList.remove('hovering'))});
+/* The unsent message types itself in layers. */
+const drafts=[
+'There are things I could say, but I do not know if saying them would change anything.',
+'I wish I could explain how strange it feels to miss someone and still be afraid of what trusting them again would ask of me.',
+'I wanted the truth before I had to search for it. I wanted to feel chosen without having to become a detective.',
+'Maybe the hardest part is that I still remember the good parts. They mattered. The hurt mattered too. I am allowed to remember both.'
+];
+let draftIndex=0,draftTyping=false;
+document.getElementById('revealDraft').addEventListener('click',()=>{if(draftTyping)return;draftIndex=(draftIndex+1)%drafts.length;const target=document.getElementById('unsentText'),button=document.getElementById('revealDraft');draftTyping=true;button.disabled=true;target.textContent='';let i=0;const caret=document.createElement('span');caret.className='type-caret';target.appendChild(caret);function typeNext(){if(i<drafts[draftIndex].length){caret.before(document.createTextNode(drafts[draftIndex][i++]));setTimeout(typeNext,18+Math.random()*28)}else{draftTyping=false;button.disabled=false;button.textContent=draftIndex===drafts.length-1?'READ IT AGAIN ↻':'REVEAL ANOTHER LINE ↗'}}typeNext()});
+/* The chosen ending changes the final passage. */
+const endingCopy={
+hope:'I can keep a little hope without handing it the keys to my life. I do not need to be certain today. I only need to leave room for something kinder than what I have known.',
+tired:'I am allowed to stop searching. Rest is not proof that I have given up on love. It means I am finally giving some of the care I offer everyone else back to myself.',
+uncertain:'I do not know what I believe right now, and pretending otherwise would be another kind of dishonesty. Uncertainty is still an answer when it is the honest one.',
+release:'I can carry the lesson without carrying every moment like it is still happening. The past can explain some of me without getting to decide all of me.'
+};
+document.querySelectorAll('[data-ending]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-ending]').forEach(b=>b.classList.toggle('selected',b===button));document.getElementById('endingResult').textContent=endingCopy[button.dataset.ending];showArchiveToast('ENDING SELECTED · YOUR RECORD HAS CHANGED')}));
+
 </script>
 </body>
 </html>
