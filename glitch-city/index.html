@@ -74,8 +74,10 @@ let jumpQueued=false,jumpVelocity=0,grounded=true;const jumpButton=document.getE
 const objects=[{x:-5,z:3,r:2,t:'VENDING MACHINE // OUT OF STOCK?'},{x:7,z:-4,r:2,t:'VENDING MACHINE // THE DRINKS ARE WARM'},{x:0,z:0,r:4,t:'PLAZA FOUNTAIN // WATER RECYCLING: UNKNOWN'},{x:24,z:7,r:3,t:'VENDING MACHINE // ACCEPTS OLD CURRENCY'}];
 
 // NIGHT SHIFT: emergency breakers, flashlight and a pursuing shadow.
-const flashlight=new THREE.SpotLight(0xe6d7cf,58,34,Math.PI/7,0.72,1.35);
-flashlight.position.set(0,0,0);const flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);camera.add(flashlight);camera.add(flashlightTarget);flashlight.target=flashlightTarget;
+const flashlight=new THREE.SpotLight(0xffe8d2,220,46,Math.PI/5,0.58,1.15);
+const flashlightTarget=new THREE.Object3D();scene.add(flashlight);scene.add(flashlightTarget);flashlight.target=flashlightTarget;
+const flashlightFill=new THREE.PointLight(0xffd9bd,34,9,1.6);scene.add(flashlightFill);
+const flashlightDirection=new THREE.Vector3();
 let flashlightOn=true,battery=100,breakers=0,gameOver=false,escaped=false,threatActive=false;
 const breakerSpots=[new THREE.Vector3(-28,0,0),new THREE.Vector3(28,0,-14),new THREE.Vector3(0,0,-28)];
 const breakerMeshes=[];
@@ -100,7 +102,7 @@ if(found.kind==='breaker'){breakerMeshes[found.index].userData.taken=true;breake
 else if(found.kind==='exit'){if(breakers===3){escaped=true;objective.textContent='YOU MADE IT OUT. FOR NOW.';say('SIGNAL RESTORED // NIGHT SHIFT COMPLETE');document.exitPointerLock?.()}else say('POWER OFFLINE // '+(3-breakers)+' BREAKERS STILL MISSING')}
 else say(found.t)}
 document.removeEventListener('keydown',()=>{});
-document.addEventListener('keydown',e=>{if(e.code==='KeyF'&&!e.repeat){flashlightOn=!flashlightOn;flashlight.visible=flashlightOn;say(flashlightOn?'FLASHLIGHT ON':'FLASHLIGHT OFF')}if(e.code==='KeyR'&&(gameOver||escaped))location.reload()});
+document.addEventListener('keydown',e=>{if(e.code==='KeyF'&&!e.repeat){flashlightOn=!flashlightOn;flashlight.visible=flashlightOn;flashlightFill.visible=flashlightOn;say(flashlightOn?'FLASHLIGHT ON':'FLASHLIGHT OFF')}if(e.code==='KeyR'&&(gameOver||escaped))location.reload()});
 function endNight(){if(gameOver||escaped)return;gameOver=true;objective.textContent='THE CITY HAS YOU // PRESS R TO RETRY';say('SIGNAL LOST');document.exitPointerLock?.();document.getElementById('intro').style.display='grid';document.querySelector('.eyebrow').textContent='CONNECTION TERMINATED';document.querySelector('h1').innerHTML='NIGHT<br><span>CLAIMED YOU.</span>';document.querySelector('.desc').textContent='The breakers are still out. The streets are quiet again. Press retry when you are ready.';document.getElementById('enter').textContent='RETRY NIGHT SHIFT';document.getElementById('enter').onclick=()=>location.reload()}
 
 let elapsed=0,last=performance.now();function animate(now){requestAnimationFrame(animate);if(now-last<1000/45)return;const dt=Math.min((now-last)/1000,.033);last=now;elapsed+=dt;yaw+= (targetYaw-yaw)*Math.min(1,dt*18);pitch+=(targetPitch-pitch)*Math.min(1,dt*18);camera.rotation.set(pitch,yaw,0,'YXZ');
@@ -110,7 +112,7 @@ if(jumpQueued&&grounded){jumpVelocity=7.2;grounded=false;jumpQueued=false}if(!gr
 cars.forEach(c=>{const k=c.axis==='x'?'x':'z';c.g.position[k]+=c.speed*c.dir*dt;if(c.g.position[k]>42)c.g.position[k]=-42;if(c.g.position[k]<-42)c.g.position[k]=42});
 for(let i=0;i<N;i++){const j=i*3;rainPos[j+1]-=rainSpeed[i]*dt;if(rainPos[j+1]<0){rainPos[j+1]=25;rainPos[j]=(Math.random()-.5)*75;rainPos[j+2]=(Math.random()-.5)*75}}rainGeo.attributes.position.needsUpdate=true;
 cyan.position.x=Math.sin(elapsed*.3)*18;pink.position.z=Math.cos(elapsed*.25)*17;
-if(flashlightOn){battery=Math.max(0,battery-dt*.12);if(battery===0){flashlightOn=false;flashlight.visible=false;say('FLASHLIGHT BATTERY DEPLETED')}}document.getElementById('clock').innerHTML='02:'+String((17+Math.floor(elapsed/60))%60).padStart(2,'0')+' AM<br>BATTERY // '+Math.floor(battery)+'%';
+if(flashlightOn){camera.getWorldPosition(flashlight.position);camera.getWorldDirection(flashlightDirection);flashlightTarget.position.copy(flashlight.position).addScaledVector(flashlightDirection,14);flashlightFill.position.copy(flashlight.position);battery=Math.max(0,battery-dt*.12);if(battery===0){flashlightOn=false;flashlight.visible=false;flashlightFill.visible=false;say('FLASHLIGHT BATTERY DEPLETED')}}else{flashlightFill.visible=false}document.getElementById('clock').innerHTML='02:'+String((17+Math.floor(elapsed/60))%60).padStart(2,'0')+' AM<br>BATTERY // '+Math.floor(battery)+'%';
 breakerMeshes.forEach((g,i)=>{if(g.visible)g.rotation.y=elapsed*.55+i});
 if(threatActive&&!gameOver&&!escaped){const dx=camera.position.x-shadow.position.x,dz=camera.position.z-shadow.position.z,dist=Math.hypot(dx,dz);const pace=breakers===3?2.65:1.35;if(dist>2.25){const step=pace*dt;const nx=shadow.position.x+dx/(dist||1)*step,nz=shadow.position.z+dz/(dist||1)*step;if(!blocked(nx,shadow.position.z))shadow.position.x=nx;if(!blocked(shadow.position.x,nz))shadow.position.z=nz;}shadow.lookAt(camera.position.x,0,camera.position.z);shadow.position.y=.04*Math.sin(elapsed*3);danger.style.opacity=dist<17?String(Math.min(.65,(17-dist)/17*.65)):0;if(dist<2.4)endNight();}else danger.style.opacity=0;
 if(!threatActive&&elapsed>24){threatActive=true;say('SOMETHING MOVED IN THE RAIN');}
