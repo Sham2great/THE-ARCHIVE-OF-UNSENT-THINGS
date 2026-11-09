@@ -39,6 +39,7 @@
 #mobileJoystick:after{content:'MOVE';position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#8bb8bc;font:8px 'Share Tech Mono';letter-spacing:.2em;pointer-events:none}
 #mobileActions{display:none;position:fixed;z-index:22;left:max(16px,env(safe-area-inset-left));bottom:164px;grid-template-columns:repeat(2,54px);gap:7px;pointer-events:auto}
 .mobileAction{width:54px;height:42px;padding:0;border:1px solid #5d9ca0;background:#071820ed;color:#cafffb;font:700 9px 'Share Tech Mono';letter-spacing:.08em;box-shadow:0 0 12px #24e8df33;touch-action:none}
+#mobileInteract{width:58px;height:46px;border:1px solid #8afff2;background:linear-gradient(135deg,#15515a,#071820);color:#d8fffb;box-shadow:0 0 18px #24e8df66;font-size:8px;touch-action:manipulation;pointer-events:auto;position:relative;z-index:30}
 .mobileAction:nth-child(2){border-color:#bd7890;color:#ffc0d0;background:#240d18ed}.mobileAction:nth-child(3){border-color:#b49b69;color:#ffe5a6;background:#21190aed}.mobileAction:nth-child(4){border-color:#a98aff;color:#e1d6ff;background:#170e2ced}
 @media(max-width:700px),(pointer:coarse){
  #mobileJoystick,#mobileActions{display:block}
@@ -202,11 +203,11 @@ const N=240,rainPos=new Float32Array(N*3),rainSpeed=[];for(let i=0;i<N;i++){rain
 const rainGeo=new THREE.BufferGeometry();rainGeo.setAttribute('position',new THREE.BufferAttribute(rainPos,3));const rainMat=new THREE.PointsMaterial({color:0x8adbe8,size:.055,transparent:true,opacity:.48});const rainSystem=new THREE.Points(rainGeo,rainMat);scene.add(rainSystem);
 const keys={};let dashQueued=false,dashTime=0,dashCooldown=0,dashDir=new THREE.Vector3(),wallClimbing=false;let breakerHold=null,breakerHoldTime=0,breakerHits=0,breakerTargetCenter=.5;let yaw=0,pitch=0,targetYaw=0,targetPitch=0,locked=false;const movementKeys=['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','Space','KeyC'];document.addEventListener('keydown',e=>{if(movementKeys.includes(e.code))e.preventDefault();keys[e.code]=true;if(e.code==='Space'){e.preventDefault();jumpQueued=true}if(e.code==='KeyC'&&!e.repeat)dashQueued=true;if(e.code==='KeyE'&&!e.repeat)interact()});document.addEventListener('keyup',e=>{keys[e.code]=false;});window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 let lookPointerId=null,lastLookX=0,lastLookY=0;
-function applyLook(dx,dy){targetYaw-=THREE.MathUtils.clamp(dx,-100,100)*.0022;targetPitch=THREE.MathUtils.clamp(targetPitch-THREE.MathUtils.clamp(dy,-100,100)*.0018,-1.35,1.35);}
+function applyLook(dx,dy,sensitivity=1){targetYaw-=THREE.MathUtils.clamp(dx,-100,100)*.0022*sensitivity;targetPitch=THREE.MathUtils.clamp(targetPitch-THREE.MathUtils.clamp(dy,-100,100)*.0018*sensitivity,-1.35,1.35);}
 document.addEventListener('mousemove',e=>{if(!locked)return;applyLook(e.movementX,e.movementY)});
 renderer.domElement.style.touchAction='none';
 renderer.domElement.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.pointerType==='pen'){lookPointerId=e.pointerId;lastLookX=e.clientX;lastLookY=e.clientY;try{renderer.domElement.setPointerCapture(e.pointerId)}catch(err){}}else if(e.pointerType==='mouse'&&document.pointerLockElement!==renderer.domElement){try{renderer.domElement.requestPointerLock?.()}catch(err){}}});
-renderer.domElement.addEventListener('pointermove',e=>{if(locked||lookPointerId!==e.pointerId)return;const dx=e.clientX-lastLookX,dy=e.clientY-lastLookY;lastLookX=e.clientX;lastLookY=e.clientY;applyLook(dx,dy)});
+renderer.domElement.addEventListener('pointermove',e=>{if(locked||lookPointerId!==e.pointerId)return;const dx=e.clientX-lastLookX,dy=e.clientY-lastLookY;lastLookX=e.clientX;lastLookY=e.clientY;applyLook(dx,dy,2.8)});
 ['pointerup','pointercancel','lostpointercapture'].forEach(type=>renderer.domElement.addEventListener(type,e=>{if(e.pointerId===lookPointerId)lookPointerId=null}));
 renderer.domElement.addEventListener('click',()=>{if(!locked&&matchMedia('(pointer:fine)').matches&&document.pointerLockElement!==renderer.domElement){try{renderer.domElement.requestPointerLock?.()}catch(err){}}});
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(locked)lookPointerId=null});
@@ -222,7 +223,7 @@ function updateJoystick(e){const r=mobileJoystick.getBoundingClientRect(),cx=r.l
 mobileJoystick.addEventListener('pointerdown',e=>{e.preventDefault();joystickPointer=e.pointerId;mobileJoystick.setPointerCapture(e.pointerId);updateJoystick(e)});
 mobileJoystick.addEventListener('pointermove',e=>{if(e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}});
 ['pointerup','pointercancel','lostpointercapture'].forEach(t=>mobileJoystick.addEventListener(t,e=>{if(e.pointerId===joystickPointer)clearJoystick()}));
-document.getElementById('mobileInteract').addEventListener('pointerdown',e=>{e.preventDefault();interact()});
+const mobileUseButton=document.getElementById('mobileInteract');mobileUseButton.textContent='USE / HIT';mobileUseButton.setAttribute('aria-label','Use or time breaker hit');mobileUseButton.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();interact()});
 document.getElementById('mobileHide').addEventListener('pointerdown',e=>{e.preventDefault();toggleHide()});
 document.getElementById('mobileEMP').addEventListener('pointerdown',e=>{e.preventDefault();if(stunAvailable&&!gameOver&&!escaped){stunAvailable=false;stunUntil=elapsed+10;document.getElementById('stunStatus').textContent='0 // ACTIVE';threatActive=true;say('EMP RELEASED // SHADOW STUNNED FOR 10 SECONDS');}});
 document.getElementById('mobileInventory').addEventListener('pointerdown',e=>{e.preventDefault();toggleInventory()});
