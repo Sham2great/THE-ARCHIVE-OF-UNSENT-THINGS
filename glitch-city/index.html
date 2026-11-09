@@ -248,47 +248,50 @@ function endNight(reason='caught'){
  if(gameOver||escaped)return;
  gameOver=true;
  isHiding=false;
- const scare=document.getElementById('jumpscare');
- const label=scare?.querySelector('.scareText');
- if(scare&&label){
+ try{
+  let scare=document.getElementById('jumpscare');
+  if(!scare){
+   scare=document.createElement('div');
+   scare.id='jumpscare';
+   document.body.appendChild(scare);
+  }
+  let label=scare.querySelector('.scareText');
+  if(!label){
+   scare.innerHTML='<div class="scareRing"></div><div class="scareSlash"></div><div class="scareFace"><div class="scareHood"></div><div class="scareFaceplate"></div><div class="scareEye left"></div><div class="scareEye right"></div><div class="scareMouth"></div></div><div class="scareText"></div>';
+   label=scare.querySelector('.scareText');
+  }
   label.textContent=reason==='locker'?'IT OPENED THE LOCKER.':'IT FOUND YOU.';
   document.body.appendChild(scare);
   scare.classList.remove('show');
-  scare.style.setProperty('position','fixed','important');
-  scare.style.setProperty('inset','0','important');
+  Object.assign(scare.style,{position:'fixed',inset:'0',display:'flex',visibility:'visible',opacity:'1',zIndex:'2147483647',background:'#020106',pointerEvents:'none',alignItems:'center',justifyContent:'center'});
   scare.style.setProperty('display','flex','important');
-  scare.style.setProperty('visibility','visible','important');
-  scare.style.setProperty('opacity','1','important');
   scare.style.setProperty('z-index','2147483647','important');
-  scare.style.setProperty('background','#020106','important');
-  scare.style.setProperty('pointer-events','none','important');
+  const face=scare.querySelector('.scareFace');
+  if(face)face.style.visibility='visible';
+  label.style.cssText+=';display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;z-index:10!important;color:#fff!important;font:700 clamp(18px,3vw,32px) monospace!important;text-align:center!important;bottom:12%!important;left:0!important;right:0!important;text-shadow:0 0 18px #ff174d!important';
   void scare.offsetWidth;
   scare.classList.add('show');
- }else{
-  showGameError('Jumpscare overlay is missing from the page.');
+  scare.style.animation='scareBackdrop 1.9s steps(2,end) both, scareShake .07s linear 18';
+  if(face)face.style.animation='scareLunge .72s cubic-bezier(.08,.85,.16,1) both, scareAftershock .16s steps(2,end) 5 .72s';
+ }catch(error){
+  const fallback=document.createElement('div');
+  fallback.textContent='IT FOUND YOU.';
+  fallback.style.cssText='position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#080008;color:#fff;font:900 clamp(28px,7vw,76px) monospace;text-shadow:0 0 30px #f03';
+  document.body.appendChild(fallback);
  }
  objective.textContent='THE CITY HAS YOU // PRESS R TO RETRY';
  try{say('SIGNAL LOST')}catch(e){}
  try{document.exitPointerLock?.()}catch(e){}
  setTimeout(()=>{
-  if(scare){
-   scare.classList.remove('show');
-   scare.style.removeProperty('display');
-   scare.style.removeProperty('visibility');
-   scare.style.removeProperty('opacity');
-   scare.style.removeProperty('z-index');
-   scare.style.removeProperty('position');
-   scare.style.removeProperty('inset');
-   scare.style.removeProperty('background');
-   scare.style.removeProperty('pointer-events');
-  }
+  const scare=document.getElementById('jumpscare');
+  if(scare){scare.classList.remove('show');scare.style.display='none';}
   document.getElementById('intro').style.display='grid';
   document.querySelector('.eyebrow').textContent='CONNECTION TERMINATED';
   document.querySelector('h1').innerHTML='NIGHT<br><span>CLAIMED YOU.</span>';
   document.querySelector('.desc').textContent='The shadow found you. Press retry when you are ready.';
   document.getElementById('enter').textContent='RETRY NIGHT SHIFT';
   document.getElementById('enter').onclick=()=>location.reload();
- },2600);
+ },3000);
 }
 
 let huntBurstUntil=0,huntBurstNext=0,noiseUntil=0,lastKnownUntil=0,searchUntil=0,searchAngle=0;const noisePoint=new THREE.Vector3(),lastKnown=new THREE.Vector3();let menuOrbit=0;let elapsed=0,last=performance.now();function animate(now){requestAnimationFrame(animate);if(now-last<1000/45)return;const dt=Math.min((now-last)/1000,.033);last=now;if(!cinematicActive)elapsed+=dt;if(cinematicActive){updateCinematic(now)}else if(!cctvOpen&&!inventoryOpen){yaw+= (targetYaw-yaw)*Math.min(1,dt*18);pitch+=(targetPitch-pitch)*Math.min(1,dt*18);camera.rotation.set(pitch,yaw,0,'YXZ');}
