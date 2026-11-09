@@ -246,21 +246,49 @@ document.removeEventListener('keydown',()=>{});
 document.addEventListener('keydown',e=>{if(e.code==='KeyI'&&!e.repeat)toggleInventory();if(e.code==='KeyH'&&!e.repeat)toggleHide();if(e.code==='KeyQ'&&!e.repeat&&stunAvailable&&!gameOver&&!escaped){stunAvailable=false;stunUntil=elapsed+10;document.getElementById('stunStatus').textContent='0 // ACTIVE';threatActive=true;say('EMP RELEASED // SHADOW STUNNED FOR 10 SECONDS')}if(e.code==='KeyF'&&!e.repeat){flashlightOn=!flashlightOn;flashlight.visible=flashlightOn;flashlightFill.visible=flashlightOn;say(flashlightOn?'FLASHLIGHT ON':'FLASHLIGHT OFF')}if(e.code==='KeyR'&&(gameOver||escaped))location.reload()});
 function endNight(reason='caught'){
  if(gameOver||escaped)return;
- gameOver=true;isHiding=false;objective.textContent='THE CITY HAS YOU // PRESS R TO RETRY';say('SIGNAL LOST');document.exitPointerLock?.();
- const scare=document.getElementById('jumpscare'),face=scare?.querySelector('.scareFace'),label=scare?.querySelector('.scareText');
- if(!scare||!face||!label){showGameError('Jumpscare overlay is missing from the page.');return;}
- label.textContent=reason==='locker'?'IT OPENED THE LOCKER.':'IT FOUND YOU.';
- document.body.appendChild(scare);
- scare.classList.remove('show');
- scare.style.setProperty('position','fixed','important');scare.style.setProperty('inset','0','important');scare.style.setProperty('display','flex','important');scare.style.setProperty('visibility','visible','important');scare.style.setProperty('opacity','1','important');scare.style.setProperty('z-index','2147483647','important');scare.style.setProperty('background','#020106','important');scare.style.setProperty('pointer-events','none','important');
- void scare.offsetWidth;
- requestAnimationFrame(()=>{
+ gameOver=true;
+ isHiding=false;
+ const scare=document.getElementById('jumpscare');
+ const label=scare?.querySelector('.scareText');
+ if(scare&&label){
+  label.textContent=reason==='locker'?'IT OPENED THE LOCKER.':'IT FOUND YOU.';
+  document.body.appendChild(scare);
+  scare.classList.remove('show');
+  scare.style.setProperty('position','fixed','important');
+  scare.style.setProperty('inset','0','important');
+  scare.style.setProperty('display','flex','important');
+  scare.style.setProperty('visibility','visible','important');
+  scare.style.setProperty('opacity','1','important');
+  scare.style.setProperty('z-index','2147483647','important');
+  scare.style.setProperty('background','#020106','important');
+  scare.style.setProperty('pointer-events','none','important');
+  void scare.offsetWidth;
   scare.classList.add('show');
-  scare.animate([{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.82},{opacity:0}],{duration:2300,easing:'steps(2,end)'});
-  face.animate([{transform:'translateZ(-520px) scale(.12)',filter:'brightness(.2)'},{transform:'translateZ(0) scale(1.18)',filter:'brightness(1.8)',offset:.42},{transform:'translateZ(90px) scale(1.42)',filter:'brightness(1)'}],{duration:1150,easing:'cubic-bezier(.08,.85,.16,1)',fill:'forwards'});
-  label.animate([{opacity:0,transform:'translateY(24px) scale(.7)'},{opacity:1,transform:'translateY(0) scale(1)',offset:.35},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:1500,fill:'forwards'});
- });
- setTimeout(()=>{scare.classList.remove('show');scare.style.removeProperty('display');scare.style.removeProperty('visibility');scare.style.removeProperty('opacity');scare.style.removeProperty('z-index');scare.style.removeProperty('position');scare.style.removeProperty('inset');scare.style.removeProperty('background');scare.style.removeProperty('pointer-events');document.getElementById('intro').style.display='grid';document.querySelector('.eyebrow').textContent='CONNECTION TERMINATED';document.querySelector('h1').innerHTML='NIGHT<br><span>CLAIMED YOU.</span>';document.querySelector('.desc').textContent='The shadow found you. Press retry when you are ready.';document.getElementById('enter').textContent='RETRY NIGHT SHIFT';document.getElementById('enter').onclick=()=>location.reload()},2600);
+ }else{
+  showGameError('Jumpscare overlay is missing from the page.');
+ }
+ objective.textContent='THE CITY HAS YOU // PRESS R TO RETRY';
+ try{say('SIGNAL LOST')}catch(e){}
+ try{document.exitPointerLock?.()}catch(e){}
+ setTimeout(()=>{
+  if(scare){
+   scare.classList.remove('show');
+   scare.style.removeProperty('display');
+   scare.style.removeProperty('visibility');
+   scare.style.removeProperty('opacity');
+   scare.style.removeProperty('z-index');
+   scare.style.removeProperty('position');
+   scare.style.removeProperty('inset');
+   scare.style.removeProperty('background');
+   scare.style.removeProperty('pointer-events');
+  }
+  document.getElementById('intro').style.display='grid';
+  document.querySelector('.eyebrow').textContent='CONNECTION TERMINATED';
+  document.querySelector('h1').innerHTML='NIGHT<br><span>CLAIMED YOU.</span>';
+  document.querySelector('.desc').textContent='The shadow found you. Press retry when you are ready.';
+  document.getElementById('enter').textContent='RETRY NIGHT SHIFT';
+  document.getElementById('enter').onclick=()=>location.reload();
+ },2600);
 }
 
 let huntBurstUntil=0,huntBurstNext=0,noiseUntil=0,lastKnownUntil=0,searchUntil=0,searchAngle=0;const noisePoint=new THREE.Vector3(),lastKnown=new THREE.Vector3();let menuOrbit=0;let elapsed=0,last=performance.now();function animate(now){requestAnimationFrame(animate);if(now-last<1000/45)return;const dt=Math.min((now-last)/1000,.033);last=now;if(!cinematicActive)elapsed+=dt;if(cinematicActive){updateCinematic(now)}else if(!cctvOpen&&!inventoryOpen){yaw+= (targetYaw-yaw)*Math.min(1,dt*18);pitch+=(targetPitch-pitch)*Math.min(1,dt*18);camera.rotation.set(pitch,yaw,0,'YXZ');}
