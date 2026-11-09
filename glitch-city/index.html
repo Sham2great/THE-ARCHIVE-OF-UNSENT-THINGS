@@ -74,7 +74,7 @@ const objects=[{x:-5,z:3,r:2,t:'VENDING MACHINE // OUT OF STOCK?'},{x:7,z:-4,r:2
 const flashlight=new THREE.SpotLight(0xe6d7cf,58,34,Math.PI/7,0.72,1.35);
 flashlight.position.set(0,0,0);const flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);camera.add(flashlight);camera.add(flashlightTarget);flashlight.target=flashlightTarget;
 let flashlightOn=true,battery=100,breakers=0,gameOver=false,escaped=false,threatActive=false;
-const breakerSpots=[new THREE.Vector3(-21,0,0),new THREE.Vector3(21,0,-14),new THREE.Vector3(0,0,-35)];
+const breakerSpots=[new THREE.Vector3(-28,0,0),new THREE.Vector3(28,0,-14),new THREE.Vector3(0,0,-28)];
 const breakerMeshes=[];
 const breakerMat=new THREE.MeshStandardMaterial({color:0xb94c64,emissive:0x7a142e,emissiveIntensity:2});
 breakerSpots.forEach((p,i)=>{const g=new THREE.Group();g.position.copy(p);scene.add(g);const core=new THREE.Mesh(new THREE.BoxGeometry(.48,.65,.28),breakerMat);core.position.y=.65;g.add(core);const ring=new THREE.Mesh(new THREE.TorusGeometry(.48,.045,6,16),new THREE.MeshBasicMaterial({color:0xd77b8e}));ring.position.y=.65;g.add(ring);breakerMeshes.push(g)});
