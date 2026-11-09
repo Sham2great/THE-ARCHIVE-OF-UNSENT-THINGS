@@ -50,7 +50,7 @@ windowBatches.forEach((batch,i)=>{if(!batch.length)return;const mesh=new THREE.I
 cyl(0,.12,0,3.3,3.3,.24,metal);cyl(0,.28,0,2.5,2.5,.18,M(0x263d43));cyl(0,.65,0,.28,.5,.65,neonC);
 const water=new THREE.Mesh(new THREE.CircleGeometry(2.25,32),new THREE.MeshStandardMaterial({color:0x0b6872,roughness:.12,metalness:.55,emissive:0x06343b}));water.rotation.x=-Math.PI/2;water.position.y=.39;scene.add(water);
 for(let i=0;i<4;i++){const a=i*Math.PI/2;const b=box(Math.cos(a)*4,.45,Math.sin(a)*4,2.3,.35,.65,M(0x3a4146));b.rotation.y=-a;colliders.push({x:Math.cos(a)*4,z:Math.sin(a)*4,rx:1.25,rz:.55})}
-colliders.push({x:0,z:0,rx:3.25,rz:3.25});
+colliders.push({x:0,z:0,rx:3.25,rz:3.25,type:'fountain'});
 function vending(x,z,r=0){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=r;scene.add(g);box(0,1.15,0,1.15,2.3,.72,M(0x182a32),g);box(0,1.35,.38,.78,1.1,.035,neonC,g);for(let i=0;i<3;i++)box(-.25+i*.25,1.4,.42,.12,.55,.04,windows[i],g);box(.1,.35,.39,.55,.25,.04,dark,g)}
 vending(-5,3,.2);vending(7,-4,-1.2);vending(24,7,Math.PI/2);
 // Solid footprints for vending machines.
@@ -69,7 +69,7 @@ const keys={};let yaw=0,pitch=0,targetYaw=0,targetPitch=0,locked=false;const mov
 document.addEventListener('mousemove',e=>{if(!locked)return;const mx=THREE.MathUtils.clamp(e.movementX,-80,80),my=THREE.MathUtils.clamp(e.movementY,-80,80);targetYaw-=mx*.0018;targetPitch=THREE.MathUtils.clamp(targetPitch-my*.0015,-1.35,1.35)});
 renderer.domElement.addEventListener('click',()=>{if(document.pointerLockElement!==renderer.domElement)renderer.domElement.requestPointerLock?.()});document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement});
 document.getElementById('enter').onclick=()=>{document.getElementById('intro').style.display='none';renderer.domElement.requestPointerLock?.()};
-function blocked(x,z){const playerRadius=.38;if(colliders.some(c=>Math.abs(x-c.x)<c.rx+playerRadius&&Math.abs(z-c.z)<c.rz+playerRadius))return true;return cars.some(c=>{const dx=Math.abs(x-c.g.position.x),dz=Math.abs(z-c.g.position.z);const rx=(c.axis==='x'?2.25:1.25)+playerRadius,rz=(c.axis==='x'?1.25:2.25)+playerRadius;return dx<rx&&dz<rz})}
+function blocked(x,z){const playerRadius=.38;if(colliders.some(c=>{if(c.type==='fountain'&&camera.position.y>2.15)return false;return Math.abs(x-c.x)<c.rx+playerRadius&&Math.abs(z-c.z)<c.rz+playerRadius}))return true;return cars.some(c=>{const dx=Math.abs(x-c.g.position.x),dz=Math.abs(z-c.g.position.z);const rx=(c.axis==='x'?2.25:1.25)+playerRadius,rz=(c.axis==='x'?1.25:2.25)+playerRadius;return dx<rx&&dz<rz})}
 let jumpQueued=false,jumpVelocity=0,grounded=true;const jumpButton=document.getElementById('jump');jumpButton.addEventListener('pointerdown',e=>{e.preventDefault();jumpQueued=true});const toast=document.getElementById('toast');let toastTime=0;function say(s){toast.textContent=s;toast.style.opacity=1;toastTime=2.5}
 const objects=[{x:-5,z:3,r:2,t:'VENDING MACHINE // OUT OF STOCK?'},{x:7,z:-4,r:2,t:'VENDING MACHINE // THE DRINKS ARE WARM'},{x:0,z:0,r:4,t:'PLAZA FOUNTAIN // WATER RECYCLING: UNKNOWN'},{x:24,z:7,r:3,t:'VENDING MACHINE // ACCEPTS OLD CURRENCY'}];
 
