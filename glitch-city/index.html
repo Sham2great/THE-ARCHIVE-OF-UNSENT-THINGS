@@ -32,6 +32,9 @@
 })();
 </script>
 <script type="module">
+const showGameError=(message)=>{let panel=document.getElementById('gameErrorPanel');if(!panel){panel=document.createElement('div');panel.id='gameErrorPanel';panel.style.cssText='position:fixed;z-index:99999;inset:0;display:grid;place-items:center;background:#05070d;color:#d8fbff;padding:24px;font:14px/1.7 monospace;text-align:center';document.body.appendChild(panel);}panel.innerHTML='<div style="max-width:720px"><h1 style="color:#ff648a">GLITCH CITY // GAME ERROR</h1><p>The game stopped while loading. This message will help identify the cause.</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere;color:#9fffee;text-align:left;background:#101923;padding:14px;border:1px solid #31535b">'+String(message).replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]))+'</pre><p>Send a screenshot of this message so I can fix the exact issue.</p><button onclick="location.reload()" style="padding:12px 22px;background:#10252b;color:#bafffa;border:1px solid #72fff2;font:inherit">RELOAD GAME</button></div>';};
+window.addEventListener('error',event=>showGameError((event.message||'Unknown script error')+' at '+(event.filename||'')+':'+(event.lineno||'')));
+window.addEventListener('unhandledrejection',event=>showGameError('Promise error: '+(event.reason?.stack||event.reason||'Unknown rejection')));
 let THREE;
 try{THREE=await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');}
 catch(firstError){try{THREE=await import('https://unpkg.com/three@0.160.0/build/three.module.js');}
@@ -42,7 +45,7 @@ const camera=new THREE.PerspectiveCamera(76,innerWidth/innerHeight,.08,240);came
 let renderer;
 try{renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});}
 catch(webglError){document.body.innerHTML='<div style="min-height:100vh;display:grid;place-items:center;background:#05070d;color:#bafffa;font:16px monospace;padding:28px;text-align:center"><div><h1>GLITCH CITY // 3D DISPLAY UNAVAILABLE</h1><p>Your browser could not start WebGL, which this game needs to render the city.</p><p style="color:#ff6688">Try Chrome or Edge, enable hardware acceleration in browser settings, then restart the browser.</p></div></div>';throw webglError;}
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;document.body.appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;renderer.setClearColor(0x030308,1);renderer.domElement.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block';document.body.appendChild(renderer.domElement);
 const cityAmbient=new THREE.HemisphereLight(0x51404b,0x08060a,.34);scene.add(cityAmbient);const moon=new THREE.DirectionalLight(0x493342,.24);moon.position.set(-25,45,20);moon.castShadow=false;scene.add(moon);
 const cyan=new THREE.PointLight(0x7d263f,9,32,2);cyan.position.set(-8,5,0);scene.add(cyan);const pink=new THREE.PointLight(0x54152c,7,28,2);pink.position.set(12,6,-10);scene.add(pink);
 const M=(c,r=.8,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m}),boxGeo=new THREE.BoxGeometry(1,1,1);
